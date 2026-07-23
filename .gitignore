@@ -1,0 +1,11 @@
+# Secrets
+.env
+
+# Temp
+tmp/
+
+# Mac
+.DS_Store
+
+# Go binary
+bin/
