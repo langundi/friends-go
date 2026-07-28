@@ -70,3 +70,27 @@ func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {
 
 	return &post, nil
 }
+
+func (s *PostStore) GetLatestPost(ctx context.Context) (*Post, error) {
+	query := `
+		SELECT id, user_id, caption, image_url, created_at
+		FROM posts
+		ORDER BY created_at DESC
+		LIMIT 1
+	`
+
+	var post Post
+
+	err := s.db.QueryRow(ctx, query).Scan(
+		&post.ID,
+		&post.UserID,
+		&post.Caption,
+		&post.ImageURL,
+		&post.CreatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &post, nil
+}

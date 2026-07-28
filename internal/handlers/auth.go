@@ -81,6 +81,23 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *AuthHandler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	var req types.RefreshRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.InvalidPayloadError(w, r, err)
+		return
+	}
+
+	if err := h.authService.LogoutUser(r.Context(), req.RefreshToken); err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+	})
+}
+
 func (h *AuthHandler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	var req types.RefreshRequest
 	if err := utils.ReadJson(w, r, &req); err != nil {

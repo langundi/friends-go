@@ -64,7 +64,7 @@ func (s *RefeshTokenStore) GetRefreshToken(ctx context.Context, tokenString stri
 }
 
 func (s *RefeshTokenStore) DeleteRefreshToken(ctx context.Context, tokenString string) error {
-	query := `DELETE FROM refresh_token WHERE token = $1`
+	query := `DELETE FROM refresh_tokens WHERE token = $1`
 
 	_, err := s.db.Exec(ctx, query, tokenString)
 	if err != nil {

@@ -43,3 +43,12 @@ func (s *PostService) GetPostByID(ctx context.Context, id int64) (*store.Post, e
 
 	return post, nil
 }
+
+func (s *PostService) GetLatestPost(ctx context.Context) (*store.Post, error) {
+	post, err := s.postStore.GetLatestPost(ctx)
+	if err != nil {
+		return nil, ErrPostNotFound
+	}
+
+	return post, nil
+}

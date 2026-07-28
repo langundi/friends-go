@@ -31,6 +31,11 @@ func Routes(h HandlerConfig) *chi.Mux {
 		r.Post("/register", h.RegisterHandler)
 		r.Post("/login", h.LoginHandler)
 		r.Post("/refresh", h.RefreshTokenHandler)
+
+		r.Group(func(r chi.Router) {
+			r.Use(middlewares.AuthMiddleware(h.authService))
+			r.Post("/logout", h.LogoutHandler)
+		})
 	})
 
 	r.Group(func(r chi.Router) {

@@ -5,3 +5,5 @@ CREATE TABLE IF NOT EXISTS posts (
     image_url TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE INDEX idx_posts_created_at on posts (created_at DESC);

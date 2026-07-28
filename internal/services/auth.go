@@ -106,6 +106,14 @@ func (s *AuthService) LoginUser(ctx context.Context, payload types.LoginRequest)
 	return accessTokenStr, refreshTokenStr, nil
 }
 
+func (s *AuthService) LogoutUser(ctx context.Context, refreshToken string) error {
+	if err := s.refreshTokenStore.DeleteRefreshToken(ctx, refreshToken); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *AuthService) RefreshAccessToken(ctx context.Context, refreshToken string) (string, error) {
 	token, err := s.refreshTokenStore.GetRefreshToken(ctx, refreshToken)
 
