@@ -45,6 +45,38 @@ func (s *PostStore) CreatePost(ctx context.Context, post *Post) error {
 	return nil
 }
 
+func (s *PostStore) DeletePostByID(ctx context.Context, id int64) error {
+	query := `DELETE FROM posts WHERE id = $1`
+
+	_, err := s.db.Exec(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *PostStore) GetLatestPosts(ctx context.Context) ([]Post, error) {
+	query := `
+		SELECT id, user_id, caption, image_url, created_at
+		FROM posts
+		ORDER BY created_at DESC
+		LIMIT 20
+	`
+
+	rows, err := s.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	posts, err := pgx.CollectRows(rows, pgx.RowToStructByName[Post])
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
+}
+
 func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {
 	query := `
 		SELECT id, user_id, caption, image_url, created_at

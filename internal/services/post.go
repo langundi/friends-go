@@ -35,6 +35,15 @@ func (s *PostService) NewPost(ctx context.Context, req types.NewPostRequest) (*s
 	return post, nil
 }
 
+func (s *PostService) DeletePost(ctx context.Context, id int64) error {
+	err := s.postStore.DeletePostByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *PostService) GetPostByID(ctx context.Context, id int64) (*store.Post, error) {
 	post, err := s.postStore.GetPostByID(ctx, id)
 	if err != nil {
@@ -42,6 +51,15 @@ func (s *PostService) GetPostByID(ctx context.Context, id int64) (*store.Post, e
 	}
 
 	return post, nil
+}
+
+func (s *PostService) GetLatestPosts(ctx context.Context) ([]store.Post, error) {
+	posts, err := s.postStore.GetLatestPosts(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
 }
 
 func (s *PostService) GetLatestPost(ctx context.Context) (*store.Post, error) {

@@ -72,10 +72,12 @@ func main() {
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userService)
 	postHandler := handlers.NewPostHandler(postService)
+	timelineHandler := handlers.NewTimelineHandler(postService)
 	handlerCfg := handlers.HandlerConfig{
-		AuthHandler: authHandler,
-		UserHandler: userHandler,
-		PostHandler: postHandler,
+		AuthHandler:     authHandler,
+		UserHandler:     userHandler,
+		PostHandler:     postHandler,
+		TimelineHandler: timelineHandler,
 	}
 
 	// Starting Server

@@ -55,6 +55,23 @@ func (h *PostHandler) NewPostHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *PostHandler) DeletePostHadler(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	if err := h.postService.DeletePost(r.Context(), id); err != nil {
+		utils.NotFoundError(w, r, err)
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+	})
+}
+
 func (h *PostHandler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
