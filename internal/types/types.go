@@ -20,7 +20,6 @@ type RefreshRequest struct {
 }
 
 type NewPostRequest struct {
-	UserID   int64  `json:"user_id"`
 	Caption  string `json:"caption"`
 	ImageURL string `json:"image_url"`
 }
@@ -51,4 +50,15 @@ type PostResponse struct {
 	Caption   string    `json:"caption"`
 	ImageURL  string    `json:"image_url"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type UploadImageRequest struct {
+	Filename    string `json:"filename"`
+	ContentType string `json:"content_type"`
+}
+
+type UploadImageResponse struct {
+	UploadURL string `json:"upload_url"`
+	PublicURL string `json:"public_url"`
+	ObjectKey string `json:"object_key"`
 }
