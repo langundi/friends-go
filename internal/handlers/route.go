@@ -12,7 +12,6 @@ type HandlerConfig struct {
 	*AuthHandler
 	*UserHandler
 	*PostHandler
-	*TimelineHandler
 }
 
 func Routes(h HandlerConfig) *chi.Mux {
@@ -42,8 +41,6 @@ func Routes(h HandlerConfig) *chi.Mux {
 	r.Group(func(r chi.Router) {
 		r.Use(middlewares.AuthMiddleware(h.authService))
 
-		r.Get("/timeline", h.GetTimelineHandler)
-
 		r.Route("/user", func(r chi.Router) {
 			r.Get("/", h.ProfileHandler)
 			r.Get("/{id}", h.FriendsProfileHandler)
@@ -54,6 +51,7 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Post("/upload", h.GetPresignedURLHandler)
 
 			r.Get("/{id}", h.GetPostHandler)
+			r.Get("/timeline", h.GetTimelineHandler)
 			r.Get("/user/me", h.GetMyPostsHandler)
 			r.Get("/user/{userId}", h.GetUsersPostsHandler)
 

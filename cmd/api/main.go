@@ -99,13 +99,11 @@ func main() {
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userService)
 	postHandler := handlers.NewPostHandler(postService, cfg.r2.bucketName, cfg.r2.publicURL)
-	timelineHandler := handlers.NewTimelineHandler(postService)
 
 	handlerCfg := handlers.HandlerConfig{
-		AuthHandler:     authHandler,
-		UserHandler:     userHandler,
-		PostHandler:     postHandler,
-		TimelineHandler: timelineHandler,
+		AuthHandler: authHandler,
+		UserHandler: userHandler,
+		PostHandler: postHandler,
 	}
 
 	// Starting Server

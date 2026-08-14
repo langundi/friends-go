@@ -61,7 +61,7 @@ func (s *PostStore) GetLatestPosts(ctx context.Context) ([]Post, error) {
 		SELECT id, user_id, caption, image_url, created_at
 		FROM posts
 		ORDER BY created_at DESC
-		LIMIT 20
+		LIMIT 10
 	`
 
 	rows, err := s.db.Query(ctx, query)

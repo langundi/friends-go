@@ -28,6 +28,7 @@ func NewPostHandler(postService *services.PostService, bucketName, publicURL str
 	}
 }
 
+// Make a new post
 func (h *PostHandler) NewPostHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middlewares.GetUserID(r)
 	if !ok {
@@ -62,6 +63,7 @@ func (h *PostHandler) NewPostHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Delete existing post
 func (h *PostHandler) DeletePostHadler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
@@ -79,6 +81,44 @@ func (h *PostHandler) DeletePostHadler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// TODO:
+//
+// Filter posts by users mutuals.Currently fetches all posts without
+// filtering followings.
+func (h *PostHandler) GetTimelineHandler(w http.ResponseWriter, r *http.Request) {
+	// userID, ok := middlewares.GetUserID(r)
+	// if !ok {
+	// 	utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
+	// 	return
+	// }
+
+	posts, err := h.postService.GetLatestPosts(r.Context())
+	if err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	var data []types.PostResponse
+
+	for _, v := range posts {
+		response := types.PostResponse{
+			ID:        v.ID,
+			UserID:    v.UserID,
+			ImageURL:  v.ImageURL,
+			Caption:   v.Caption,
+			CreatedAt: v.CreatedAt,
+		}
+
+		data = append(data, response)
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+		Data:    data,
+	})
+}
+
+// Get a post by it's id
 func (h *PostHandler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
@@ -106,6 +146,7 @@ func (h *PostHandler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Get current user posts, used for profile tab
 func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) {
 	userId, ok := middlewares.GetUserID(r)
 	if !ok {
@@ -172,6 +213,7 @@ func (h *PostHandler) GetUsersPostsHandler(w http.ResponseWriter, r *http.Reques
 	})
 }
 
+// Get a presigned URL to upload image to Cloudflare R2
 func (h *PostHandler) GetPresignedURLHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middlewares.GetUserID(r)
 	if !ok {
