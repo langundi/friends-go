@@ -54,6 +54,7 @@ func (h *PostHandler) NewPostHandler(w http.ResponseWriter, r *http.Request) {
 		UserID:    post.UserID,
 		Caption:   post.Caption,
 		ImageURL:  post.ImageURL,
+		ObjectKey: post.ObjectKey,
 		CreatedAt: post.CreatedAt,
 	}
 
@@ -106,6 +107,7 @@ func (h *PostHandler) GetTimelineHandler(w http.ResponseWriter, r *http.Request)
 			UserID:    v.UserID,
 			ImageURL:  v.ImageURL,
 			Caption:   v.Caption,
+			ObjectKey: v.ObjectKey,
 			CreatedAt: v.CreatedAt,
 		}
 
@@ -137,6 +139,7 @@ func (h *PostHandler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 		UserID:    post.UserID,
 		Caption:   post.Caption,
 		ImageURL:  post.ImageURL,
+		ObjectKey: post.ObjectKey,
 		CreatedAt: post.CreatedAt,
 	}
 
@@ -166,8 +169,9 @@ func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) 
 		response := types.PostResponse{
 			ID:        v.ID,
 			UserID:    v.UserID,
-			ImageURL:  v.ImageURL,
 			Caption:   v.Caption,
+			ImageURL:  v.ImageURL,
+			ObjectKey: v.ObjectKey,
 			CreatedAt: v.CreatedAt,
 		}
 
@@ -199,8 +203,9 @@ func (h *PostHandler) GetUsersPostsHandler(w http.ResponseWriter, r *http.Reques
 		response := types.PostResponse{
 			ID:        v.ID,
 			UserID:    v.UserID,
-			ImageURL:  v.ImageURL,
 			Caption:   v.Caption,
+			ImageURL:  v.ImageURL,
+			ObjectKey: v.ObjectKey,
 			CreatedAt: v.CreatedAt,
 		}
 

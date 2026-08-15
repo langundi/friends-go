@@ -15,6 +15,7 @@ type Post struct {
 	UserID    int64
 	Caption   string
 	ImageURL  string
+	ObjectKey string
 	CreatedAt time.Time
 }
 
@@ -28,8 +29,8 @@ func NewPostStore(db *pgxpool.Pool) *PostStore {
 
 func (s *PostStore) CreatePost(ctx context.Context, post *Post) error {
 	query := `
-		INSERT INTO posts (user_id, caption, image_url)
-		VALUES($1, $2, $3)
+		INSERT INTO posts (user_id, caption, image_url, object_key)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id, created_at
 	`
 
@@ -37,6 +38,7 @@ func (s *PostStore) CreatePost(ctx context.Context, post *Post) error {
 		post.UserID,
 		post.Caption,
 		post.ImageURL,
+		post.ObjectKey,
 	).Scan(&post.ID, &post.CreatedAt)
 	if err != nil {
 		return err
@@ -58,7 +60,7 @@ func (s *PostStore) DeletePostByID(ctx context.Context, id int64) error {
 
 func (s *PostStore) GetLatestPosts(ctx context.Context) ([]Post, error) {
 	query := `
-		SELECT id, user_id, caption, image_url, created_at
+		SELECT id, user_id, caption, image_url, object_key, created_at
 		FROM posts
 		ORDER BY created_at DESC
 		LIMIT 10
@@ -79,7 +81,7 @@ func (s *PostStore) GetLatestPosts(ctx context.Context) ([]Post, error) {
 
 func (s *PostStore) GetLatestPost(ctx context.Context) (*Post, error) {
 	query := `
-		SELECT id, user_id, caption, image_url, created_at
+		SELECT id, user_id, caption, image_url, object_key, created_at
 		FROM posts
 		ORDER BY created_at DESC
 		LIMIT 1
@@ -92,6 +94,7 @@ func (s *PostStore) GetLatestPost(ctx context.Context) (*Post, error) {
 		&post.UserID,
 		&post.Caption,
 		&post.ImageURL,
+		&post.ObjectKey,
 		&post.CreatedAt,
 	)
 	if err != nil {
@@ -103,7 +106,7 @@ func (s *PostStore) GetLatestPost(ctx context.Context) (*Post, error) {
 
 func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {
 	query := `
-		SELECT id, user_id, caption, image_url, created_at
+		SELECT id, user_id, caption, image_url, object_key, created_at
 		FROM posts
 		WHERE id = $1
 	`
@@ -115,6 +118,7 @@ func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {
 		&post.UserID,
 		&post.Caption,
 		&post.ImageURL,
+		&post.ObjectKey,
 		&post.CreatedAt,
 	)
 	if err != nil {
@@ -128,7 +132,7 @@ func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {
 }
 func (s *PostStore) GetPostsByUserID(ctx context.Context, userId int64) ([]Post, error) {
 	query := `
-		SELECT id, user_id, caption, image_url, created_at
+		SELECT id, user_id, caption, image_url, object_key, created_at
 		FROM posts
 		WHERE user_id = $1
 		ORDER BY created_at DESC

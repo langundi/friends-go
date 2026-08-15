@@ -7,7 +7,7 @@ import (
 
 type JsonResponse struct {
 	Success bool      `json:"success"`
-	Data    any       `json:"data,omitempty"`
+	Data    any       `json:"data"`
 	Error   *APIError `json:"error,omitempty"`
 }
 

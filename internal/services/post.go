@@ -28,9 +28,10 @@ func NewPostService(postStore *store.PostStore, r2Client *s3.Client) *PostServic
 
 func (s *PostService) NewPost(ctx context.Context, req types.NewPostRequest, userID int64) (*store.Post, error) {
 	post := &store.Post{
-		UserID:   userID,
-		Caption:  req.Caption,
-		ImageURL: req.ImageURL,
+		UserID:    userID,
+		Caption:   req.Caption,
+		ImageURL:  req.ImageURL,
+		ObjectKey: req.ObjectKey,
 	}
 
 	err := s.postStore.CreatePost(ctx, post)

@@ -20,8 +20,9 @@ type RefreshRequest struct {
 }
 
 type NewPostRequest struct {
-	Caption  string `json:"caption"`
-	ImageURL string `json:"image_url"`
+	Caption   string `json:"caption"`
+	ImageURL  string `json:"image_url"`
+	ObjectKey string `json:"object_key"`
 }
 
 type GetPostRequest struct {
@@ -49,6 +50,7 @@ type PostResponse struct {
 	UserID    int64     `json:"user_id"`
 	Caption   string    `json:"caption"`
 	ImageURL  string    `json:"image_url"`
+	ObjectKey string    `json:"object_key"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
