@@ -42,6 +42,30 @@ func (s *PostService) NewPost(ctx context.Context, req types.NewPostRequest, use
 	return post, nil
 }
 
+func (s *PostService) PresignUploadURL(ctx context.Context, bucketName, objectKey, contentType string) (string, error) {
+	presignClient := s3.NewPresignClient(s.r2Client)
+
+	req, err := presignClient.PresignPutObject(ctx, &s3.PutObjectInput{
+		Bucket:      aws.String(bucketName),
+		Key:         aws.String(objectKey),
+		ContentType: aws.String(contentType),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return req.URL, nil
+}
+
+func (s *PostService) DeleteImage(ctx context.Context, bucketName, objectKey string) error {
+	_, err := s.r2Client.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objectKey),
+	})
+
+	return err
+}
+
 func (s *PostService) DeletePost(ctx context.Context, id int64) error {
 	err := s.postStore.DeletePostByID(ctx, id)
 	if err != nil {
@@ -85,19 +109,4 @@ func (s *PostService) GetLatestPost(ctx context.Context) (*store.Post, error) {
 	}
 
 	return post, nil
-}
-
-func (s *PostService) PresignUploadURL(ctx context.Context, bucketName, objectKey, contentType string) (string, error) {
-	presignClient := s3.NewPresignClient(s.r2Client)
-
-	req, err := presignClient.PresignPutObject(ctx, &s3.PutObjectInput{
-		Bucket:      aws.String(bucketName),
-		Key:         aws.String(objectKey),
-		ContentType: aws.String(contentType),
-	})
-	if err != nil {
-		return "", err
-	}
-
-	return req.URL, nil
 }

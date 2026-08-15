@@ -64,3 +64,8 @@ type UploadImageResponse struct {
 	PublicURL string `json:"public_url"`
 	ObjectKey string `json:"object_key"`
 }
+
+type DeletePostRequest struct {
+	ID        int64  `json:"id"`
+	ObjectKey string `json:"object_key"`
+}

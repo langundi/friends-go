@@ -55,7 +55,8 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Get("/user/me", h.GetMyPostsHandler)
 			r.Get("/user/{userId}", h.GetUsersPostsHandler)
 
-			r.Delete("/{id}", h.DeletePostHadler)
+			// r.Delete("/{id}", h.DeletePostHadler)
+			r.Delete("/", h.DeletePostHadler)
 		})
 	})
 

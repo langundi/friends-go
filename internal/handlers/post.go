@@ -64,15 +64,55 @@ func (h *PostHandler) NewPostHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// Delete existing post
-func (h *PostHandler) DeletePostHadler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+// Get a presigned URL to upload image to Cloudflare R2
+func (h *PostHandler) GetPresignedURLHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
+		return
+	}
+
+	var req types.UploadImageRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.InvalidPayloadError(w, r, err)
+		return
+	}
+
+	objectKey := h.generateObjectKey(userID, req.Filename, "posts")
+	url, err := h.postService.PresignUploadURL(r.Context(), h.bucketName, objectKey, req.ContentType)
 	if err != nil {
 		utils.InternalServerError(w, r, err)
 		return
 	}
 
-	if err := h.postService.DeletePost(r.Context(), id); err != nil {
+	response := types.UploadImageResponse{
+		UploadURL: url,
+		PublicURL: h.publicImageURL(objectKey),
+		ObjectKey: objectKey,
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+		Data:    response,
+	})
+}
+
+// Delete existing post
+func (h *PostHandler) DeletePostHadler(w http.ResponseWriter, r *http.Request) {
+	var req types.DeletePostRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.InvalidPayloadError(w, r, err)
+		return
+	}
+
+	// Delete the image from Cloudflare R2
+	if err := h.postService.DeleteImage(r.Context(), h.bucketName, req.ObjectKey); err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	// Delete post from database
+	if err := h.postService.DeletePost(r.Context(), req.ID); err != nil {
 		utils.NotFoundError(w, r, err)
 		return
 	}
@@ -215,39 +255,6 @@ func (h *PostHandler) GetUsersPostsHandler(w http.ResponseWriter, r *http.Reques
 	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
 		Success: true,
 		Data:    data,
-	})
-}
-
-// Get a presigned URL to upload image to Cloudflare R2
-func (h *PostHandler) GetPresignedURLHandler(w http.ResponseWriter, r *http.Request) {
-	userID, ok := middlewares.GetUserID(r)
-	if !ok {
-		utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
-		return
-	}
-
-	var req types.UploadImageRequest
-	if err := utils.ReadJson(w, r, &req); err != nil {
-		utils.InvalidPayloadError(w, r, err)
-		return
-	}
-
-	objectKey := h.generateObjectKey(userID, req.Filename, "posts")
-	url, err := h.postService.PresignUploadURL(r.Context(), h.bucketName, objectKey, req.ContentType)
-	if err != nil {
-		utils.InternalServerError(w, r, err)
-		return
-	}
-
-	response := types.UploadImageResponse{
-		UploadURL: url,
-		PublicURL: h.publicImageURL(objectKey),
-		ObjectKey: objectKey,
-	}
-
-	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
-		Success: true,
-		Data:    response,
 	})
 }
 
