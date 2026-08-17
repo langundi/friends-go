@@ -12,6 +12,7 @@ type HandlerConfig struct {
 	*AuthHandler
 	*UserHandler
 	*PostHandler
+	*FriendHandler
 }
 
 func Routes(h HandlerConfig) *chi.Mux {
@@ -48,15 +49,22 @@ func Routes(h HandlerConfig) *chi.Mux {
 		})
 
 		r.Route("/post", func(r chi.Router) {
-			r.Post("/", h.NewPostHandler)
-			r.Post("/upload", h.GetPresignedURLHandler)
-
 			r.Get("/{id}", h.GetPostHandler)
 			r.Get("/timeline", h.GetTimelineHandler)
 			r.Get("/user/me", h.GetMyPostsHandler)
 			r.Get("/user/{userId}", h.GetUsersPostsHandler)
 
+			r.Post("/", h.NewPostHandler)
+			r.Post("/upload", h.GetPresignedURLHandler)
+
 			r.Delete("/", h.DeletePostHadler)
+		})
+
+		r.Route("/friend-request", func(r chi.Router) {
+			r.Get("/", h.GetFriendRequests)
+
+			r.Post("/send/{receiverId}", h.CreateFriendRequestHandler)
+			r.Delete("/decline/{id}", h.DeclineFriendRequestHandler)
 		})
 	})
 

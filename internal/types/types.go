@@ -74,3 +74,20 @@ type SearchUsernameResponse struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
 }
+
+type NewFriendRequestResponse struct {
+	ID         int64     `json:"id"`
+	SenderID   int64     `json:"sender_id"`
+	ReceiverID int64     `json:"receiver_id"`
+	Status     string    `json:"status"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+type FriendRequestResponse struct {
+	ID             int64     `json:"id"`
+	SenderID       int64     `json:"sender_id"`
+	SenderUsername string    `json:"sender_username"`
+	ReceiverID     int64     `json:"receiver_id"`
+	Status         string    `json:"status"`
+	CreatedAt      time.Time `json:"created_at"`
+}

@@ -113,7 +113,7 @@ func (h *PostHandler) DeletePostHadler(w http.ResponseWriter, r *http.Request) {
 
 	// Delete post from database
 	if err := h.postService.DeletePost(r.Context(), req.ID); err != nil {
-		utils.NotFoundError(w, r, err)
+		utils.InternalServerError(w, r, err)
 		return
 	}
 

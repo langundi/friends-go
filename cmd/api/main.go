@@ -81,6 +81,7 @@ func main() {
 	userStore := store.NewUserStore(db)
 	refreshTokenStore := store.NewRefreshTokenStore(db)
 	postStore := store.NewPostStore(db)
+	friendStore := store.NewFriendStore(db)
 
 	ctx := context.Background()
 
@@ -94,16 +95,19 @@ func main() {
 	authService := services.NewAuthService(userStore, refreshTokenStore, cfg.secret, 1*time.Hour)
 	userService := services.NewUserService(userStore)
 	postService := services.NewPostService(postStore, r2Client)
+	friendService := services.NewFriendService(friendStore)
 
 	// Create Handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userService)
 	postHandler := handlers.NewPostHandler(postService, cfg.r2.bucketName, cfg.r2.publicURL)
+	friendHandler := handlers.NewFriendHandler(friendService)
 
 	handlerCfg := handlers.HandlerConfig{
-		AuthHandler: authHandler,
-		UserHandler: userHandler,
-		PostHandler: postHandler,
+		AuthHandler:   authHandler,
+		UserHandler:   userHandler,
+		PostHandler:   postHandler,
+		FriendHandler: friendHandler,
 	}
 
 	// Starting Server

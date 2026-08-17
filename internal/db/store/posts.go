@@ -130,6 +130,7 @@ func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {
 
 	return &post, nil
 }
+
 func (s *PostStore) GetPostsByUserID(ctx context.Context, userId int64) ([]Post, error) {
 	query := `
 		SELECT id, user_id, caption, image_url, object_key, created_at
