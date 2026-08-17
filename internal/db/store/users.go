@@ -24,6 +24,8 @@ type UserStore struct {
 	db *pgxpool.Pool
 }
 
+var ErrUserNotFound = errors.New("user not found")
+
 func NewUserStore(db *pgxpool.Pool) *UserStore {
 	return &UserStore{db: db}
 }
@@ -62,6 +64,52 @@ func (s *UserStore) DeleteUser(ctx context.Context, id int64) error {
 	return nil
 }
 
+func (s *UserStore) GetUserByID(ctx context.Context, id int64) (*User, error) {
+	query := `
+		SELECT id, username
+		FROM users
+		WHERE id = $1
+	`
+
+	var user User
+
+	err := s.db.QueryRow(ctx, query, id).Scan(
+		&user.ID,
+		&user.Username,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+		return nil, fmt.Errorf("query user by id: %w", err)
+	}
+
+	return &user, nil
+}
+
+func (s *UserStore) GetUserByUsername(ctx context.Context, username string) (*User, error) {
+	query := `
+		SELECT id, username
+		FROM users
+		WHERE username = $1
+	`
+
+	var user User
+
+	err := s.db.QueryRow(ctx, query, username).Scan(
+		&user.ID,
+		&user.Username,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+		return nil, fmt.Errorf("query user by username: %w", err)
+	}
+
+	return &user, nil
+}
+
 func (s *UserStore) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 	query := `
 		SELECT id, username, email, password, created_at, updated_at
@@ -81,35 +129,8 @@ func (s *UserStore) GetUserByEmail(ctx context.Context, email string) (*User, er
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("get user email %s:", email)
+			return nil, fmt.Errorf("query user by email %s:", email)
 		}
-		return nil, err
-	}
-
-	return &user, nil
-}
-
-func (s *UserStore) GetUserByID(ctx context.Context, id int64) (*User, error) {
-	query := `
-		SELECT id, username, email, password, created_at, updated_at
-		FROM users
-		WHERE id = $1
-	`
-
-	var user User
-
-	err := s.db.QueryRow(ctx, query, id).Scan(
-		&user.ID,
-		&user.Username,
-		&user.Email,
-		&user.Password,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
-	if err != nil {
-		// if errors.Is(err, pgx.ErrNoRows) {
-		// 	return nil, fmt.Errorf("get user id %v:", id)
-		// }
 		return nil, err
 	}
 

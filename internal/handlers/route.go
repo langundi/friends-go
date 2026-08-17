@@ -42,8 +42,9 @@ func Routes(h HandlerConfig) *chi.Mux {
 		r.Use(middlewares.AuthMiddleware(h.authService))
 
 		r.Route("/user", func(r chi.Router) {
-			r.Get("/", h.ProfileHandler)
-			r.Get("/{id}", h.FriendsProfileHandler)
+			r.Get("/", h.GetProfileHandler)
+			r.Get("/{id}", h.GetFriendProfileHandler)
+			r.Get("/search/{username}", h.SearchProfileHandler)
 		})
 
 		r.Route("/post", func(r chi.Router) {
@@ -55,7 +56,6 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Get("/user/me", h.GetMyPostsHandler)
 			r.Get("/user/{userId}", h.GetUsersPostsHandler)
 
-			// r.Delete("/{id}", h.DeletePostHadler)
 			r.Delete("/", h.DeletePostHadler)
 		})
 	})

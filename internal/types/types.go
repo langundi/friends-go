@@ -69,3 +69,8 @@ type DeletePostRequest struct {
 	ID        int64  `json:"id"`
 	ObjectKey string `json:"object_key"`
 }
+
+type SearchUsernameResponse struct {
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+}
