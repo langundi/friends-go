@@ -24,6 +24,7 @@ func NewFriendHandler(friendService *services.FriendService) *FriendHandler {
 	return &FriendHandler{friendService: friendService}
 }
 
+// Create a new friend request
 func (h *FriendHandler) CreateFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middlewares.GetUserID(r)
 	if !ok {
@@ -57,7 +58,8 @@ func (h *FriendHandler) CreateFriendRequestHandler(w http.ResponseWriter, r *htt
 	})
 }
 
-func (h *FriendHandler) GetFriendRequests(w http.ResponseWriter, r *http.Request) {
+// Fetch all friend request for a current user
+func (h *FriendHandler) GetFriendRequestsHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middlewares.GetUserID(r)
 	if !ok {
 		utils.UnauthorizedError(w, r, ErrUnauthorized)
@@ -91,6 +93,38 @@ func (h *FriendHandler) GetFriendRequests(w http.ResponseWriter, r *http.Request
 	})
 }
 
+// Get friendship status for current and targeted user
+func (h *FriendHandler) GetFriendshipStatusHandler(w http.ResponseWriter, r *http.Request) {
+	currentUserID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, ErrUnauthorized)
+		return
+	}
+
+	searchedUserID, err := strconv.ParseInt(chi.URLParam(r, "userId"), 10, 64)
+	if err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	rel, err := h.friendService.GetFriendshipStatus(r.Context(), currentUserID, searchedUserID)
+	if err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	respone := types.FriendshipStatusResponse{
+		FriendshipStatus: rel,
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+		Data:    respone,
+	})
+
+}
+
+// Decline a friend request for current user
 func (h *FriendHandler) DeclineFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {

@@ -91,3 +91,7 @@ type FriendRequestResponse struct {
 	Status         string    `json:"status"`
 	CreatedAt      time.Time `json:"created_at"`
 }
+
+type FriendshipStatusResponse struct {
+	FriendshipStatus string `json:"friendship_status"`
+}

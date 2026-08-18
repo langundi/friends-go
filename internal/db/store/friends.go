@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -77,6 +78,33 @@ func (s *FriendStore) GetFriendRequestsForUserID(ctx context.Context, userID int
 	}
 
 	return list, nil
+}
+
+func (s *FriendStore) GetFriendshipStatus(ctx context.Context, currentUserID, searchedUserID int64) (*NewFriendRequest, error) {
+	query := `
+		SELECT id, sender_id, receiver_id, status, created_at
+		FROM friends
+		WHERE (sender_id = $1 AND receiver_id = $2)
+		OR (sender_id = $2 AND receiver_id = $1)
+	`
+
+	var friendReq NewFriendRequest
+
+	err := s.db.QueryRow(ctx, query, currentUserID, searchedUserID).Scan(
+		&friendReq.ID,
+		&friendReq.SenderID,
+		&friendReq.ReceiverID,
+		&friendReq.Status,
+		&friendReq.CreatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("checking relationship status: %w", err)
+	}
+
+	return &friendReq, nil
 }
 
 func (s *FriendStore) DeleteFriendRequestByID(ctx context.Context, id int64) error {
