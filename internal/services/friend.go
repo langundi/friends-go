@@ -66,8 +66,18 @@ func (s *FriendService) GetFriendshipStatus(ctx context.Context, currentUserId, 
 }
 
 // Delete or Decline a friend request
-func (s *FriendService) DeleteFriendRequestByID(ctx context.Context, id int64) error {
+func (s *FriendService) DeclineFriendRequestByID(ctx context.Context, id int64) error {
 	err := s.friendStore.DeleteFriendRequestByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Accept a friend request
+func (s *FriendService) AcceptFriendRequestByID(ctx context.Context, id int64) error {
+	err := s.friendStore.AcceptFriendRequestByID(ctx, id)
 	if err != nil {
 		return err
 	}

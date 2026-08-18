@@ -66,6 +66,7 @@ func Routes(h HandlerConfig) *chi.Mux {
 
 			r.Post("/send/{receiverId}", h.CreateFriendRequestHandler)
 			r.Delete("/decline/{id}", h.DeclineFriendRequestHandler)
+			r.Patch("/accept/{id}", h.AcceptFriendRequestHandler)
 		})
 	})
 

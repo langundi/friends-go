@@ -117,3 +117,18 @@ func (s *FriendStore) DeleteFriendRequestByID(ctx context.Context, id int64) err
 
 	return nil
 }
+
+func (s *FriendStore) AcceptFriendRequestByID(ctx context.Context, id int64) error {
+	query := `
+		UPDATE friends
+		SET status = 'accepted'
+		WHERE id = $1
+	`
+
+	_, err := s.db.Exec(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
