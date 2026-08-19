@@ -95,3 +95,9 @@ type FriendRequestResponse struct {
 type FriendshipStatusResponse struct {
 	FriendshipStatus string `json:"friendship_status"`
 }
+
+type FriendResponse struct {
+	ID       int64  `json:"id"`
+	UserID   int64  `json:"user_id"`
+	Username string `json:"username"`
+}

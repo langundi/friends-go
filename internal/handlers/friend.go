@@ -125,14 +125,14 @@ func (h *FriendHandler) GetFriendshipStatusHandler(w http.ResponseWriter, r *htt
 }
 
 // Decline a friend request for current user
-func (h *FriendHandler) DeclineFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
+func (h *FriendHandler) DeclineOrUnfriendFriendHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		utils.BadRequestError(w, r, err)
 		return
 	}
 
-	if err := h.friendService.DeclineFriendRequestByID(r.Context(), id); err != nil {
+	if err := h.friendService.DeclineOrUnfriendFriendByID(r.Context(), id); err != nil {
 		utils.InternalServerError(w, r, err)
 		return
 	}
@@ -174,11 +174,12 @@ func (h *FriendHandler) GetFriendListHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var data []types.UsernameResponse
+	var data []types.FriendResponse
 
 	for _, v := range list {
-		response := types.UsernameResponse{
+		response := types.FriendResponse{
 			ID:       v.ID,
+			UserID:   v.UserID,
 			Username: v.Username,
 		}
 

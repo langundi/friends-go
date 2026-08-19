@@ -29,6 +29,7 @@ type FriendRequest struct {
 
 type Friend struct {
 	ID       int64
+	UserID   int64
 	Username string
 }
 
@@ -112,7 +113,7 @@ func (s *FriendStore) GetFriendshipStatus(ctx context.Context, currentUserID, se
 	return &friendReq, nil
 }
 
-func (s *FriendStore) DeleteFriendRequestByID(ctx context.Context, id int64) error {
+func (s *FriendStore) DeleteFriendByID(ctx context.Context, id int64) error {
 	query := `DELETE FROM friends WHERE id = $1`
 
 	_, err := s.db.Exec(ctx, query, id)
@@ -123,7 +124,7 @@ func (s *FriendStore) DeleteFriendRequestByID(ctx context.Context, id int64) err
 	return nil
 }
 
-func (s *FriendStore) AcceptFriendRequestByID(ctx context.Context, id int64) error {
+func (s *FriendStore) AcceptFriendByID(ctx context.Context, id int64) error {
 	query := `
 		UPDATE friends
 		SET status = 'accepted'
@@ -140,7 +141,7 @@ func (s *FriendStore) AcceptFriendRequestByID(ctx context.Context, id int64) err
 
 func (s *FriendStore) GetFriendListForUserID(ctx context.Context, userID int64) ([]Friend, error) {
 	query := `
-		SELECT u.id, u.username
+		SELECT f.id, u.id as user_id, u.username
 		FROM friends f
 		JOIN users u ON u.id = CASE
 			WHEN f.sender_id = $1 THEN f.receiver_id
