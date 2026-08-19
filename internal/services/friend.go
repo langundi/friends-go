@@ -84,3 +84,13 @@ func (s *FriendService) AcceptFriendRequestByID(ctx context.Context, id int64) e
 
 	return nil
 }
+
+// Get friend list
+func (s *FriendService) GetFriendListForUserID(ctx context.Context, userID int64) ([]store.Friend, error) {
+	list, err := s.friendStore.GetFriendListForUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}

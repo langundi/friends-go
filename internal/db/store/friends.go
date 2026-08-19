@@ -27,6 +27,11 @@ type FriendRequest struct {
 	SenderUsername string
 }
 
+type Friend struct {
+	ID       int64
+	Username string
+}
+
 type FriendStore struct {
 	db *pgxpool.Pool
 }
@@ -69,7 +74,7 @@ func (s *FriendStore) GetFriendRequestsForUserID(ctx context.Context, userID int
 
 	rows, err := s.db.Query(ctx, query, userID)
 	if err != nil {
-		return nil, fmt.Errorf("query incoming request: %w", err)
+		return nil, fmt.Errorf("query incoming friend request: %w", err)
 	}
 
 	list, err := pgx.CollectRows(rows, pgx.RowToStructByName[FriendRequest])
@@ -131,4 +136,29 @@ func (s *FriendStore) AcceptFriendRequestByID(ctx context.Context, id int64) err
 	}
 
 	return nil
+}
+
+func (s *FriendStore) GetFriendListForUserID(ctx context.Context, userID int64) ([]Friend, error) {
+	query := `
+		SELECT u.id, u.username
+		FROM friends f
+		JOIN users u ON u.id = CASE
+			WHEN f.sender_id = $1 THEN f.receiver_id
+			ELSE f.sender_id
+		END
+		WHERE (f.sender_id = $1 OR f.receiver_id = $1)
+		AND f.status = 'accepted'
+	`
+
+	rows, err := s.db.Query(ctx, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("query friend list: %w", err)
+	}
+
+	list, err := pgx.CollectRows(rows, pgx.RowToStructByName[Friend])
+	if err != nil {
+		return nil, fmt.Errorf("collecting friend list: %w", err)
+	}
+
+	return list, nil
 }

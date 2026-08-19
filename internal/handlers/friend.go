@@ -159,3 +159,34 @@ func (h *FriendHandler) AcceptFriendRequestHandler(w http.ResponseWriter, r *htt
 		Success: true,
 	})
 }
+
+// Get friend list for current user
+func (h *FriendHandler) GetFriendListHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, ErrUnauthorized)
+		return
+	}
+
+	list, err := h.friendService.GetFriendListForUserID(r.Context(), userID)
+	if err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	var data []types.UsernameResponse
+
+	for _, v := range list {
+		response := types.UsernameResponse{
+			ID:       v.ID,
+			Username: v.Username,
+		}
+
+		data = append(data, response)
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+		Data:    data,
+	})
+}

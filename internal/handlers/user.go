@@ -98,7 +98,7 @@ func (h *UserHandler) SearchProfileHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	response := types.SearchUsernameResponse{
+	response := types.UsernameResponse{
 		ID:       user.ID,
 		Username: user.Username,
 	}
