@@ -58,15 +58,25 @@ func (s *PostStore) DeletePostByID(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (s *PostStore) GetLatestPosts(ctx context.Context) ([]Post, error) {
+func (s *PostStore) GetTimeline(ctx context.Context, userID int64) ([]Post, error) {
 	query := `
-		SELECT id, user_id, caption, image_url, object_key, created_at
-		FROM posts
-		ORDER BY created_at DESC
+		SELECT p.id, p.user_id, p.caption, p.image_url, p.object_key, p.created_at
+		FROM posts p
+		WHERE p.user_id = $1
+			OR p.user_id IN (
+				SELECT CASE
+					WHEN f.sender_id = $1 THEN f.receiver_id
+					ELSE f.sender_id
+				END
+				FROM friends f
+				WHERE (f.sender_id = $1 or f.receiver_id = $1)
+				AND f.status = 'accepted'
+			)
+		ORDER BY p.created_at DESC
 		LIMIT 10
 	`
 
-	rows, err := s.db.Query(ctx, query)
+	rows, err := s.db.Query(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -77,31 +87,6 @@ func (s *PostStore) GetLatestPosts(ctx context.Context) ([]Post, error) {
 	}
 
 	return posts, nil
-}
-
-func (s *PostStore) GetLatestPost(ctx context.Context) (*Post, error) {
-	query := `
-		SELECT id, user_id, caption, image_url, object_key, created_at
-		FROM posts
-		ORDER BY created_at DESC
-		LIMIT 1
-	`
-
-	var post Post
-
-	err := s.db.QueryRow(ctx, query).Scan(
-		&post.ID,
-		&post.UserID,
-		&post.Caption,
-		&post.ImageURL,
-		&post.ObjectKey,
-		&post.CreatedAt,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return &post, nil
 }
 
 func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {

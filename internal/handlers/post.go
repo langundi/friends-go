@@ -112,7 +112,7 @@ func (h *PostHandler) DeletePostHadler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Delete post from database
-	if err := h.postService.DeletePost(r.Context(), req.ID); err != nil {
+	if err := h.postService.DeletePostByID(r.Context(), req.ID); err != nil {
 		utils.InternalServerError(w, r, err)
 		return
 	}
@@ -122,18 +122,15 @@ func (h *PostHandler) DeletePostHadler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// TODO:
-//
-// Filter posts by users mutuals.Currently fetches all posts without
-// filtering followings.
+// Get timeline
 func (h *PostHandler) GetTimelineHandler(w http.ResponseWriter, r *http.Request) {
-	// userID, ok := middlewares.GetUserID(r)
-	// if !ok {
-	// 	utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
-	// 	return
-	// }
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
+		return
+	}
 
-	posts, err := h.postService.GetLatestPosts(r.Context())
+	posts, err := h.postService.GetTimeline(r.Context(), userID)
 	if err != nil {
 		utils.InternalServerError(w, r, err)
 		return

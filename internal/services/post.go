@@ -66,7 +66,7 @@ func (s *PostService) DeleteImage(ctx context.Context, bucketName, objectKey str
 	return err
 }
 
-func (s *PostService) DeletePost(ctx context.Context, id int64) error {
+func (s *PostService) DeletePostByID(ctx context.Context, id int64) error {
 	err := s.postStore.DeletePostByID(ctx, id)
 	if err != nil {
 		return err
@@ -93,20 +93,11 @@ func (s *PostService) GetPostsByUserID(ctx context.Context, userId int64) ([]sto
 	return posts, nil
 }
 
-func (s *PostService) GetLatestPosts(ctx context.Context) ([]store.Post, error) {
-	posts, err := s.postStore.GetLatestPosts(ctx)
+func (s *PostService) GetTimeline(ctx context.Context, userID int64) ([]store.Post, error) {
+	posts, err := s.postStore.GetTimeline(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
 	return posts, nil
-}
-
-func (s *PostService) GetLatestPost(ctx context.Context) (*store.Post, error) {
-	post, err := s.postStore.GetLatestPost(ctx)
-	if err != nil {
-		return nil, ErrPostNotFound
-	}
-
-	return post, nil
 }
