@@ -11,12 +11,15 @@ import (
 )
 
 type Post struct {
-	ID        int64
-	UserID    int64
-	Caption   string
-	ImageURL  string
-	ObjectKey string
-	CreatedAt time.Time
+	ID         int64
+	UserID     int64
+	Caption    string
+	ImageURL   string
+	ObjectKey  string
+	LikeCount  int
+	ReplyCount int
+	CreatedAt  time.Time
+	LikedByMe  bool
 }
 
 type PostStore struct {
@@ -60,7 +63,10 @@ func (s *PostStore) DeletePostByID(ctx context.Context, id int64) error {
 
 func (s *PostStore) GetTimeline(ctx context.Context, userID int64) ([]Post, error) {
 	query := `
-		SELECT p.id, p.user_id, p.caption, p.image_url, p.object_key, p.created_at
+		SELECT p.id, p.user_id, p.caption, p.image_url, p.object_key, p.like_count, p.reply_count, p.created_at,
+			EXISTS (
+				SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $1
+			) AS liked_by_me
 		FROM posts p
 		WHERE p.user_id = $1
 			OR p.user_id IN (
@@ -91,8 +97,11 @@ func (s *PostStore) GetTimeline(ctx context.Context, userID int64) ([]Post, erro
 
 func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {
 	query := `
-		SELECT id, user_id, caption, image_url, object_key, created_at
-		FROM posts
+		SELECT p.id, p.user_id, p.caption, p.image_url, p.object_key, p.like_count, p.reply_count, p.created_at,
+			EXISTS (
+				SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $1
+			) AS liked_by_me
+		FROM posts p
 		WHERE id = $1
 	`
 
@@ -104,6 +113,8 @@ func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {
 		&post.Caption,
 		&post.ImageURL,
 		&post.ObjectKey,
+		&post.LikeCount,
+		&post.ReplyCount,
 		&post.CreatedAt,
 	)
 	if err != nil {
@@ -116,15 +127,18 @@ func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {
 	return &post, nil
 }
 
-func (s *PostStore) GetPostsByUserID(ctx context.Context, userId int64) ([]Post, error) {
+func (s *PostStore) GetPostsByUserID(ctx context.Context, userID int64) ([]Post, error) {
 	query := `
-		SELECT id, user_id, caption, image_url, object_key, created_at
-		FROM posts
+		SELECT p.id, p.user_id, p.caption, p.image_url, p.object_key, p.like_count, p.reply_count, p.created_at,
+			EXISTS (
+				SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $1
+			) AS liked_by_me
+		FROM posts p
 		WHERE user_id = $1
 		ORDER BY created_at DESC
 	`
 
-	rows, err := s.db.Query(ctx, query, userId)
+	rows, err := s.db.Query(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}

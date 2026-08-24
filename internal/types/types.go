@@ -46,12 +46,15 @@ type RefreshResponse struct {
 }
 
 type PostResponse struct {
-	ID        int64     `json:"id"`
-	UserID    int64     `json:"user_id"`
-	Caption   string    `json:"caption"`
-	ImageURL  string    `json:"image_url"`
-	ObjectKey string    `json:"object_key"`
-	CreatedAt time.Time `json:"created_at"`
+	ID         int64     `json:"id"`
+	UserID     int64     `json:"user_id"`
+	Caption    string    `json:"caption"`
+	ImageURL   string    `json:"image_url"`
+	ObjectKey  string    `json:"object_key"`
+	LikeCount  int       `json:"like_count"`
+	ReplyCount int       `json:"reply_count"`
+	CreatedAt  time.Time `json:"created_at"`
+	LikedByMe  bool      `json:"liked_by_me"`
 }
 
 type UploadImageRequest struct {

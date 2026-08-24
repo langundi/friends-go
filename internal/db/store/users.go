@@ -49,7 +49,7 @@ func (s *UserStore) CreateUser(ctx context.Context, user *User) error {
 	return nil
 }
 
-func (s *UserStore) DeleteUser(ctx context.Context, id int64) error {
+func (s *UserStore) DeleteUserByID(ctx context.Context, id int64) error {
 	query := `DELETE FROM users WHERE id = $1`
 
 	result, err := s.db.Exec(ctx, query, id)

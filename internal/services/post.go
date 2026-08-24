@@ -12,6 +12,7 @@ import (
 
 type PostService struct {
 	postStore *store.PostStore
+	likeStore *store.LikeStore
 	r2Client  *s3.Client
 }
 
@@ -19,9 +20,10 @@ var (
 	ErrPostNotFound = errors.New("Post not found.")
 )
 
-func NewPostService(postStore *store.PostStore, r2Client *s3.Client) *PostService {
+func NewPostService(postStore *store.PostStore, likeStore *store.LikeStore, r2Client *s3.Client) *PostService {
 	return &PostService{
 		postStore: postStore,
+		likeStore: likeStore,
 		r2Client:  r2Client,
 	}
 }
@@ -84,8 +86,8 @@ func (s *PostService) GetPostByID(ctx context.Context, id int64) (*store.Post, e
 	return post, nil
 }
 
-func (s *PostService) GetPostsByUserID(ctx context.Context, userId int64) ([]store.Post, error) {
-	posts, err := s.postStore.GetPostsByUserID(ctx, userId)
+func (s *PostService) GetPostsByUserID(ctx context.Context, userID int64) ([]store.Post, error) {
+	posts, err := s.postStore.GetPostsByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -100,4 +102,22 @@ func (s *PostService) GetTimeline(ctx context.Context, userID int64) ([]store.Po
 	}
 
 	return posts, nil
+}
+
+func (s *PostService) LikePost(ctx context.Context, userID, postID int64) error {
+	err := s.likeStore.LikePost(ctx, userID, postID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *PostService) UnlikePost(ctx context.Context, userID, postID int64) error {
+	err := s.likeStore.UnlikePost(ctx, userID, postID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -44,8 +44,8 @@ func (s *FriendService) GetFriendRequestsForUserID(ctx context.Context, userID i
 }
 
 // Get friendship status for searching user
-func (s *FriendService) GetFriendshipStatus(ctx context.Context, currentUserId, searchedUserId int64) (string, error) {
-	rel, err := s.friendStore.GetFriendshipStatus(ctx, currentUserId, searchedUserId)
+func (s *FriendService) GetFriendshipStatus(ctx context.Context, currentUserID, searchedUserID int64) (string, error) {
+	rel, err := s.friendStore.GetFriendshipStatus(ctx, currentUserID, searchedUserID)
 	if err != nil {
 		return "", err
 	}
@@ -58,7 +58,7 @@ func (s *FriendService) GetFriendshipStatus(ctx context.Context, currentUserId, 
 		return string(StatusFriends), nil
 	}
 
-	if rel.SenderID == currentUserId {
+	if rel.SenderID == currentUserID {
 		return string(StatusSent), nil
 	}
 

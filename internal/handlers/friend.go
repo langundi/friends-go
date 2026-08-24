@@ -32,13 +32,13 @@ func (h *FriendHandler) CreateFriendRequestHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	receiverId, err := strconv.ParseInt(chi.URLParam(r, "receiverId"), 10, 64)
+	receiverID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		utils.BadRequestError(w, r, err)
 		return
 	}
 
-	friendRequest, err := h.friendService.CreateFriendRequest(r.Context(), userID, receiverId)
+	friendRequest, err := h.friendService.CreateFriendRequest(r.Context(), userID, receiverID)
 	if err != nil {
 		utils.InternalServerError(w, r, err)
 		return
@@ -95,19 +95,19 @@ func (h *FriendHandler) GetFriendRequestsHandler(w http.ResponseWriter, r *http.
 
 // Get friendship status for current and targeted user
 func (h *FriendHandler) GetFriendshipStatusHandler(w http.ResponseWriter, r *http.Request) {
-	currentUserID, ok := middlewares.GetUserID(r)
+	userID, ok := middlewares.GetUserID(r)
 	if !ok {
 		utils.UnauthorizedError(w, r, ErrUnauthorized)
 		return
 	}
 
-	searchedUserID, err := strconv.ParseInt(chi.URLParam(r, "userId"), 10, 64)
+	searchedUserID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		utils.BadRequestError(w, r, err)
 		return
 	}
 
-	rel, err := h.friendService.GetFriendshipStatus(r.Context(), currentUserID, searchedUserID)
+	rel, err := h.friendService.GetFriendshipStatus(r.Context(), userID, searchedUserID)
 	if err != nil {
 		utils.BadRequestError(w, r, err)
 		return
@@ -126,13 +126,13 @@ func (h *FriendHandler) GetFriendshipStatusHandler(w http.ResponseWriter, r *htt
 
 // Decline a friend request for current user
 func (h *FriendHandler) DeclineOrUnfriendFriendHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	userID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		utils.BadRequestError(w, r, err)
 		return
 	}
 
-	if err := h.friendService.DeclineOrUnfriendFriendByID(r.Context(), id); err != nil {
+	if err := h.friendService.DeclineOrUnfriendFriendByID(r.Context(), userID); err != nil {
 		utils.InternalServerError(w, r, err)
 		return
 	}
@@ -144,13 +144,13 @@ func (h *FriendHandler) DeclineOrUnfriendFriendHandler(w http.ResponseWriter, r 
 
 // Accept a friend request for current user
 func (h *FriendHandler) AcceptFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	userID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		utils.BadRequestError(w, r, err)
 		return
 	}
 
-	if err := h.friendService.AcceptFriendRequestByID(r.Context(), id); err != nil {
+	if err := h.friendService.AcceptFriendRequestByID(r.Context(), userID); err != nil {
 		utils.InternalServerError(w, r, err)
 		return
 	}

@@ -67,17 +67,17 @@ func (s *AuthService) RegisterUser(ctx context.Context, req types.RegisterReques
 	return user, nil
 }
 
-func (s *AuthService) LoginUser(ctx context.Context, payload types.LoginRequest) (string, string, error) {
-	if payload.Email == "" || payload.Password == "" {
+func (s *AuthService) LoginUser(ctx context.Context, req types.LoginRequest) (string, string, error) {
+	if req.Email == "" || req.Password == "" {
 		return "", "", ErrEmptyFields
 	}
 
-	user, err := s.userStore.GetUserByEmail(ctx, payload.Email)
+	user, err := s.userStore.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		return "", "", ErrInvalidCredentials
 	}
 
-	if err := user.CheckPassword(payload.Password); err != nil {
+	if err := user.CheckPassword(req.Password); err != nil {
 		return "", "", ErrInvalidCredentials
 	}
 

@@ -36,7 +36,7 @@ func (s *LikeStore) LikePost(ctx context.Context, userID, postID int64) error {
 
 func (s *LikeStore) UnlikePost(ctx context.Context, userID, postID int64) error {
 	query := `
-		DELTE FROM likes WHERE user_id = $1 AND post_id = $2
+		DELETE FROM likes WHERE user_id = $1 AND post_id = $2
 	`
 
 	_, err := s.db.Exec(ctx, query, userID, postID)

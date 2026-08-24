@@ -10,10 +10,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-func NewR2Client(ctx context.Context, accountId, accessKeyId, secretKey string) (*s3.Client, error) {
+func NewR2Client(ctx context.Context, accountID, accessKeyID, secretKey string) (*s3.Client, error) {
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyId, secretKey, "")),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, secretKey, "")),
 		config.WithRegion("auto"),
 	)
 	if err != nil {
@@ -21,7 +21,7 @@ func NewR2Client(ctx context.Context, accountId, accessKeyId, secretKey string) 
 	}
 
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
-		o.BaseEndpoint = aws.String(fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountId))
+		o.BaseEndpoint = aws.String(fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountID))
 		o.UsePathStyle = true
 	})
 

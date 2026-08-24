@@ -54,13 +54,13 @@ func (h *UserHandler) GetProfileHandler(w http.ResponseWriter, r *http.Request) 
 
 // Get a friend profile
 func (h *UserHandler) GetFriendProfileHandler(w http.ResponseWriter, r *http.Request) {
-	friendID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	userID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		utils.InternalServerError(w, r, err)
 		return
 	}
 
-	user, err := h.userService.GetUserByID(r.Context(), friendID)
+	user, err := h.userService.GetUserByID(r.Context(), userID)
 	if err != nil {
 		switch {
 		case errors.Is(err, services.ErrUserNotFound):

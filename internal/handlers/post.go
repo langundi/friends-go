@@ -140,12 +140,15 @@ func (h *PostHandler) GetTimelineHandler(w http.ResponseWriter, r *http.Request)
 
 	for _, v := range posts {
 		response := types.PostResponse{
-			ID:        v.ID,
-			UserID:    v.UserID,
-			ImageURL:  v.ImageURL,
-			Caption:   v.Caption,
-			ObjectKey: v.ObjectKey,
-			CreatedAt: v.CreatedAt,
+			ID:         v.ID,
+			UserID:     v.UserID,
+			ImageURL:   v.ImageURL,
+			Caption:    v.Caption,
+			ObjectKey:  v.ObjectKey,
+			LikeCount:  v.LikeCount,
+			ReplyCount: v.ReplyCount,
+			CreatedAt:  v.CreatedAt,
+			LikedByMe:  v.LikedByMe,
 		}
 
 		data = append(data, response)
@@ -159,13 +162,13 @@ func (h *PostHandler) GetTimelineHandler(w http.ResponseWriter, r *http.Request)
 
 // Get a post by it's id
 func (h *PostHandler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	postID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		utils.BadRequestError(w, r, err)
 		return
 	}
 
-	post, err := h.postService.GetPostByID(r.Context(), id)
+	post, err := h.postService.GetPostByID(r.Context(), postID)
 	if err != nil {
 		utils.NotFoundError(w, r, err)
 		return
@@ -186,15 +189,61 @@ func (h *PostHandler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// Get current user posts, used for profile tab
-func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) {
-	userId, ok := middlewares.GetUserID(r)
+func (h *PostHandler) LikePostHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
 	if !ok {
 		utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
 		return
 	}
 
-	posts, err := h.postService.GetPostsByUserID(r.Context(), userId)
+	postID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	if err := h.postService.LikePost(r.Context(), userID, postID); err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+	})
+}
+
+func (h *PostHandler) UnlikePostHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
+		return
+	}
+
+	postID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	if err := h.postService.UnlikePost(r.Context(), userID, postID); err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+	})
+}
+
+// Get current user posts, used for profile tab
+func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
+		return
+	}
+
+	posts, err := h.postService.GetPostsByUserID(r.Context(), userID)
 	if err != nil {
 		utils.NotFoundError(w, r, err)
 		return
@@ -204,12 +253,15 @@ func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) 
 
 	for _, v := range posts {
 		response := types.PostResponse{
-			ID:        v.ID,
-			UserID:    v.UserID,
-			Caption:   v.Caption,
-			ImageURL:  v.ImageURL,
-			ObjectKey: v.ObjectKey,
-			CreatedAt: v.CreatedAt,
+			ID:         v.ID,
+			UserID:     v.UserID,
+			Caption:    v.Caption,
+			ImageURL:   v.ImageURL,
+			ObjectKey:  v.ObjectKey,
+			LikeCount:  v.LikeCount,
+			ReplyCount: v.ReplyCount,
+			CreatedAt:  v.CreatedAt,
+			LikedByMe:  v.LikedByMe,
 		}
 
 		data = append(data, response)
@@ -222,13 +274,13 @@ func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *PostHandler) GetUsersPostsHandler(w http.ResponseWriter, r *http.Request) {
-	userId, err := strconv.ParseInt(chi.URLParam(r, "userId"), 10, 64)
+	userID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		utils.BadRequestError(w, r, err)
 		return
 	}
 
-	posts, err := h.postService.GetPostsByUserID(r.Context(), userId)
+	posts, err := h.postService.GetPostsByUserID(r.Context(), userID)
 	if err != nil {
 		utils.NotFoundError(w, r, err)
 		return

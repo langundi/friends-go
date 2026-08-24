@@ -32,7 +32,7 @@ type dbConfig struct {
 }
 
 type r2Config struct {
-	accountId  string
+	accountID  string
 	accessKey  string
 	secretKey  string
 	bucketName string
@@ -53,7 +53,7 @@ func main() {
 			maxIdleTime:  getString("DB_MAX_IDLE_TIME", "15m"),
 		},
 		r2: r2Config{
-			accountId:  getString("R2_ACCOUNT_ID", ""),
+			accountID:  getString("R2_ACCOUNT_ID", ""),
 			accessKey:  getString("R2_ACCESS_KEY_ID", ""),
 			secretKey:  getString("R2_SECRET_ACCESS_KEY", ""),
 			bucketName: getString("R2_BUCKET_NAME", ""),
@@ -82,11 +82,12 @@ func main() {
 	refreshTokenStore := store.NewRefreshTokenStore(db)
 	postStore := store.NewPostStore(db)
 	friendStore := store.NewFriendStore(db)
+	likeStore := store.NewLikeStore(db)
 
 	ctx := context.Background()
 
 	// Create Bucket
-	r2Client, err := bucket.NewR2Client(ctx, cfg.r2.accountId, cfg.r2.accessKey, cfg.r2.secretKey)
+	r2Client, err := bucket.NewR2Client(ctx, cfg.r2.accountID, cfg.r2.accessKey, cfg.r2.secretKey)
 	if err != nil {
 		log.Fatalf("r2 setup failed: %v", err)
 	}
@@ -94,7 +95,7 @@ func main() {
 	// Create Services
 	authService := services.NewAuthService(userStore, refreshTokenStore, cfg.secret, 1*time.Hour)
 	userService := services.NewUserService(userStore)
-	postService := services.NewPostService(postStore, r2Client)
+	postService := services.NewPostService(postStore, likeStore, r2Client)
 	friendService := services.NewFriendService(friendStore)
 
 	// Create Handlers
