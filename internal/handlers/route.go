@@ -54,12 +54,15 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Post("/", h.NewPostHandler)
 			r.Post("/upload-image", h.GetPresignedURLHandler)
 			r.Post("/like/{id}", h.LikePostHandler)
+			r.Post("/reply/{id}", h.ReplyPostHandler)
 
 			r.Get("/{id}", h.GetPostHandler)
 			r.Get("/timeline", h.GetTimelineHandler)
+			r.Get("/reply/{id}", h.GetPostRepliesHandler)
 
 			r.Delete("/", h.DeletePostHadler)
 			r.Delete("/unlike/{id}", h.UnlikePostHandler)
+			r.Delete("/reply/{id}", h.DeleteReplyHandler)
 		})
 
 		r.Route("/friend-request", func(r chi.Router) {

@@ -235,6 +235,92 @@ func (h *PostHandler) UnlikePostHandler(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
+func (h *PostHandler) GetPostRepliesHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
+		return
+	}
+
+	postID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	replies, err := h.postService.GetRepliesForPost(r.Context(), userID, postID)
+	if err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	var data []types.ReplyResponse
+
+	for _, v := range replies {
+		response := types.ReplyResponse{
+			ID:          v.ID,
+			UserID:      v.UserID,
+			PostID:      v.PostID,
+			Reply:       v.Reply,
+			CreatedAt:   v.CreatedAt,
+			RepliedByMe: v.RepliedByMe,
+		}
+
+		data = append(data, response)
+	}
+
+	utils.WriteJson(w, http.StatusCreated, utils.JsonResponse{
+		Success: true,
+		Data:    data,
+	})
+}
+
+func (h *PostHandler) ReplyPostHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
+		return
+	}
+
+	postID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	var req types.ReplyRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	if err := h.postService.ReplyPost(r.Context(), userID, postID, req.Reply); err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	utils.WriteJson(w, http.StatusCreated, utils.JsonResponse{
+		Success: true,
+	})
+}
+
+func (h *PostHandler) DeleteReplyHandler(w http.ResponseWriter, r *http.Request) {
+	replyID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	if err := h.postService.DeleteReply(r.Context(), replyID); err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+	})
+}
+
 // Get current user posts, used for profile tab
 func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middlewares.GetUserID(r)

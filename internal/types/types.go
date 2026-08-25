@@ -104,3 +104,16 @@ type FriendResponse struct {
 	UserID   int64  `json:"user_id"`
 	Username string `json:"username"`
 }
+
+type ReplyRequest struct {
+	Reply string `json:"reply"`
+}
+
+type ReplyResponse struct {
+	ID          int64     `json:"id"`
+	UserID      int64     `json:"user_id"`
+	PostID      int64     `json:"post_id"`
+	Reply       string    `json:"reply"`
+	CreatedAt   time.Time `json:"created_at"`
+	RepliedByMe bool      `json:"replied_by_me"`
+}

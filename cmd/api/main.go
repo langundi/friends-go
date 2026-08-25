@@ -83,6 +83,7 @@ func main() {
 	postStore := store.NewPostStore(db)
 	friendStore := store.NewFriendStore(db)
 	likeStore := store.NewLikeStore(db)
+	replyStore := store.NewReplyStore(db)
 
 	ctx := context.Background()
 
@@ -95,7 +96,7 @@ func main() {
 	// Create Services
 	authService := services.NewAuthService(userStore, refreshTokenStore, cfg.secret, 1*time.Hour)
 	userService := services.NewUserService(userStore)
-	postService := services.NewPostService(postStore, likeStore, r2Client)
+	postService := services.NewPostService(postStore, likeStore, replyStore, r2Client)
 	friendService := services.NewFriendService(friendStore)
 
 	// Create Handlers

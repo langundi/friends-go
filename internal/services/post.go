@@ -11,20 +11,22 @@ import (
 )
 
 type PostService struct {
-	postStore *store.PostStore
-	likeStore *store.LikeStore
-	r2Client  *s3.Client
+	postStore  *store.PostStore
+	likeStore  *store.LikeStore
+	replyStore *store.ReplyStore
+	r2Client   *s3.Client
 }
 
 var (
 	ErrPostNotFound = errors.New("Post not found.")
 )
 
-func NewPostService(postStore *store.PostStore, likeStore *store.LikeStore, r2Client *s3.Client) *PostService {
+func NewPostService(postStore *store.PostStore, likeStore *store.LikeStore, replyStore *store.ReplyStore, r2Client *s3.Client) *PostService {
 	return &PostService{
-		postStore: postStore,
-		likeStore: likeStore,
-		r2Client:  r2Client,
+		postStore:  postStore,
+		likeStore:  likeStore,
+		replyStore: replyStore,
+		r2Client:   r2Client,
 	}
 }
 
@@ -115,6 +117,33 @@ func (s *PostService) LikePost(ctx context.Context, userID, postID int64) error 
 
 func (s *PostService) UnlikePost(ctx context.Context, userID, postID int64) error {
 	err := s.likeStore.UnlikePost(ctx, userID, postID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *PostService) GetRepliesForPost(ctx context.Context, userID, postID int64) ([]store.Reply, error) {
+	replies, err := s.replyStore.GetRepliesForPostID(ctx, userID, postID)
+	if err != nil {
+		return nil, err
+	}
+
+	return replies, nil
+}
+
+func (s *PostService) ReplyPost(ctx context.Context, userID, postID int64, reply string) error {
+	err := s.replyStore.CreateReply(ctx, userID, postID, reply)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *PostService) DeleteReply(ctx context.Context, replyID int64) error {
+	err := s.replyStore.DeleteReply(ctx, replyID)
 	if err != nil {
 		return err
 	}
