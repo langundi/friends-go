@@ -55,6 +55,7 @@ type PostResponse struct {
 	ReplyCount int       `json:"reply_count"`
 	CreatedAt  time.Time `json:"created_at"`
 	LikedByMe  bool      `json:"liked_by_me"`
+	Username   string    `json:"username"`
 }
 
 type UploadImageRequest struct {
@@ -116,4 +117,5 @@ type ReplyResponse struct {
 	Reply       string    `json:"reply"`
 	CreatedAt   time.Time `json:"created_at"`
 	RepliedByMe bool      `json:"replied_by_me"`
+	Username    string    `json:"username"`
 }

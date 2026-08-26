@@ -149,6 +149,7 @@ func (h *PostHandler) GetTimelineHandler(w http.ResponseWriter, r *http.Request)
 			ReplyCount: v.ReplyCount,
 			CreatedAt:  v.CreatedAt,
 			LikedByMe:  v.LikedByMe,
+			Username:   v.Username,
 		}
 
 		data = append(data, response)
@@ -264,6 +265,7 @@ func (h *PostHandler) GetPostRepliesHandler(w http.ResponseWriter, r *http.Reque
 			Reply:       v.Reply,
 			CreatedAt:   v.CreatedAt,
 			RepliedByMe: v.RepliedByMe,
+			Username:    v.Username,
 		}
 
 		data = append(data, response)
@@ -348,6 +350,7 @@ func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) 
 			ReplyCount: v.ReplyCount,
 			CreatedAt:  v.CreatedAt,
 			LikedByMe:  v.LikedByMe,
+			Username:   v.Username,
 		}
 
 		data = append(data, response)

@@ -15,6 +15,7 @@ type Reply struct {
 	Reply       string
 	CreatedAt   time.Time
 	RepliedByMe bool
+	Username    string
 }
 
 type ReplyStore struct {
@@ -54,8 +55,9 @@ func (s *ReplyStore) DeleteReply(ctx context.Context, replyID int64) error {
 
 func (s *ReplyStore) GetRepliesForPostID(ctx context.Context, userID, postID int64) ([]Reply, error) {
 	query := `
-		SELECT id, user_id, post_id, reply, created_at, user_id = $1 AS replied_by_me
-		FROM replies
+		SELECT r.id, r.user_id, r.post_id, r.reply, r.created_at, r.user_id = $1 AS replied_by_me, u.username
+		FROM replies r
+		JOIN users u ON u.id = r.user_id
 		WHERE post_id = $2
 		ORDER BY created_at ASC
 		LIMIT 10

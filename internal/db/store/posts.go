@@ -20,6 +20,7 @@ type Post struct {
 	ReplyCount int
 	CreatedAt  time.Time
 	LikedByMe  bool
+	Username   string
 }
 
 type PostStore struct {
@@ -66,8 +67,10 @@ func (s *PostStore) GetTimeline(ctx context.Context, userID int64) ([]Post, erro
 		SELECT p.id, p.user_id, p.caption, p.image_url, p.object_key, p.like_count, p.reply_count, p.created_at,
 			EXISTS (
 				SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $1
-			) AS liked_by_me
+			) AS liked_by_me,
+			u.username
 		FROM posts p
+		JOIN users u ON u.id = p.user_id
 		WHERE p.user_id = $1
 			OR p.user_id IN (
 				SELECT CASE
@@ -132,8 +135,10 @@ func (s *PostStore) GetPostsByUserID(ctx context.Context, userID int64) ([]Post,
 		SELECT p.id, p.user_id, p.caption, p.image_url, p.object_key, p.like_count, p.reply_count, p.created_at,
 			EXISTS (
 				SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $1
-			) AS liked_by_me
+			) AS liked_by_me,
+			u.username
 		FROM posts p
+		JOIN users u ON u.id = p.user_id
 		WHERE user_id = $1
 		ORDER BY created_at DESC
 	`
