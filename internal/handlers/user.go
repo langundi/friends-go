@@ -136,3 +136,31 @@ func (h *UserHandler) UpdateUsername(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 	})
 }
+
+func (h *UserHandler) UpdateEmail(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, ErrUnauthorized)
+		return
+	}
+
+	var req types.UpdateEmailRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	if err := h.userService.UpdateEmail(r.Context(), req.Email, userID); err != nil {
+		switch {
+		case errors.Is(err, services.ErrDuplicateEmail):
+			utils.BadRequestError(w, r, err)
+		default:
+			utils.InternalServerError(w, r, err)
+		}
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+	})
+}

@@ -28,6 +28,7 @@ type UserStore struct {
 var (
 	ErrUserNotFound      = errors.New("user not found")
 	ErrDuplicateUsername = errors.New("username already exists")
+	ErrDuplicateEmail    = errors.New("email already registered")
 )
 
 func NewUserStore(db *pgxpool.Pool) *UserStore {
@@ -165,6 +166,21 @@ func (s *UserStore) UpdateUsername(ctx context.Context, username string, userID 
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 			return ErrDuplicateUsername
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserStore) UpdateEmail(ctx context.Context, email string, userID int64) error {
+	query := `UPDATE users SET email = $1 WHERE id = $2`
+
+	_, err := s.db.Exec(ctx, query, email, userID)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return ErrDuplicateEmail
 		}
 		return err
 	}

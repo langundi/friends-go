@@ -124,3 +124,7 @@ type ReplyResponse struct {
 type UpdateUsernameRequest struct {
 	Username string `json:"username"`
 }
+
+type UpdateEmailRequest struct {
+	Email string `json:"email"`
+}

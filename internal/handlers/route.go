@@ -50,6 +50,7 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Get("/search/{username}", h.SearchProfileHandler)
 
 			r.Post("/update/username", h.UpdateUsername)
+			r.Post("/update/email", h.UpdateEmail)
 		})
 
 		r.Route("/post", func(r chi.Router) {
