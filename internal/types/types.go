@@ -107,7 +107,8 @@ type FriendResponse struct {
 }
 
 type ReplyRequest struct {
-	Reply string `json:"reply"`
+	Reply    string `json:"reply"`
+	Username string `json:"username"`
 }
 
 type ReplyResponse struct {

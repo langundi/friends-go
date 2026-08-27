@@ -66,7 +66,7 @@ func (s *UserStore) DeleteUserByID(ctx context.Context, id int64) error {
 
 func (s *UserStore) GetUserByID(ctx context.Context, id int64) (*User, error) {
 	query := `
-		SELECT id, username
+		SELECT id, username, email
 		FROM users
 		WHERE id = $1
 	`
@@ -76,6 +76,7 @@ func (s *UserStore) GetUserByID(ctx context.Context, id int64) (*User, error) {
 	err := s.db.QueryRow(ctx, query, id).Scan(
 		&user.ID,
 		&user.Username,
+		&user.Email,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

@@ -26,13 +26,18 @@ func NewReplyStore(db *pgxpool.Pool) *ReplyStore {
 	return &ReplyStore{db: db}
 }
 
-func (s *ReplyStore) CreateReply(ctx context.Context, userID, postID int64, reply string) error {
+func (s *ReplyStore) CreateReply(ctx context.Context, reply *Reply) error {
 	query := `
 		INSERT INTO replies (user_id, post_id, reply)
 		VALUES ($1, $2, $3)
+		RETURNING id, created_at
 	`
 
-	_, err := s.db.Exec(ctx, query, userID, postID, reply)
+	err := s.db.QueryRow(ctx, query,
+		reply.UserID,
+		reply.PostID,
+		reply.Reply,
+	).Scan(&reply.ID, &reply.CreatedAt)
 	if err != nil {
 		return err
 	}

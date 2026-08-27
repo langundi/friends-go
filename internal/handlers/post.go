@@ -296,13 +296,25 @@ func (h *PostHandler) ReplyPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.postService.ReplyPost(r.Context(), userID, postID, req.Reply); err != nil {
+	reply, err := h.postService.ReplyPost(r.Context(), userID, postID, req)
+	if err != nil {
 		utils.InternalServerError(w, r, err)
 		return
 	}
 
+	response := types.ReplyResponse{
+		ID:          reply.ID,
+		UserID:      reply.UserID,
+		PostID:      reply.PostID,
+		Reply:       reply.Reply,
+		CreatedAt:   reply.CreatedAt,
+		RepliedByMe: reply.RepliedByMe,
+		Username:    reply.Username,
+	}
+
 	utils.WriteJson(w, http.StatusCreated, utils.JsonResponse{
 		Success: true,
+		Data:    response,
 	})
 }
 

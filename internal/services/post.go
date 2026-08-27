@@ -133,13 +133,21 @@ func (s *PostService) GetRepliesForPost(ctx context.Context, userID, postID int6
 	return replies, nil
 }
 
-func (s *PostService) ReplyPost(ctx context.Context, userID, postID int64, reply string) error {
-	err := s.replyStore.CreateReply(ctx, userID, postID, reply)
-	if err != nil {
-		return err
+func (s *PostService) ReplyPost(ctx context.Context, userID, postID int64, req types.ReplyRequest) (*store.Reply, error) {
+	reply := &store.Reply{
+		UserID:      userID,
+		PostID:      postID,
+		Reply:       req.Reply,
+		RepliedByMe: true,
+		Username:    req.Username,
 	}
 
-	return nil
+	err := s.replyStore.CreateReply(ctx, reply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
 }
 
 func (s *PostService) DeleteReply(ctx context.Context, replyID int64) error {
