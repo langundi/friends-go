@@ -120,3 +120,7 @@ type ReplyResponse struct {
 	RepliedByMe bool      `json:"replied_by_me"`
 	Username    string    `json:"username"`
 }
+
+type UpdateUsernameRequest struct {
+	Username string `json:"username"`
+}

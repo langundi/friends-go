@@ -12,7 +12,8 @@ type UserService struct {
 }
 
 var (
-	ErrUserNotFound = errors.New("User not found.")
+	ErrUserNotFound      = errors.New("User not found.")
+	ErrDuplicateUsername = errors.New("Username already exists.")
 )
 
 func NewUserService(userStore *store.UserStore) *UserService {
@@ -45,4 +46,16 @@ func (s *UserService) GetUserByUsername(ctx context.Context, username string) (*
 	}
 
 	return user, nil
+}
+
+func (s *UserService) UpdateUsername(ctx context.Context, username string, userID int64) error {
+	err := s.userStore.UpdateUsername(ctx, username, userID)
+	if err != nil {
+		if errors.Is(err, store.ErrDuplicateUsername) {
+			return ErrDuplicateUsername
+		}
+		return err
+	}
+
+	return nil
 }

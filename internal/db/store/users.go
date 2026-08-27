@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -24,10 +25,28 @@ type UserStore struct {
 	db *pgxpool.Pool
 }
 
-var ErrUserNotFound = errors.New("user not found")
+var (
+	ErrUserNotFound      = errors.New("user not found")
+	ErrDuplicateUsername = errors.New("username already exists")
+)
 
 func NewUserStore(db *pgxpool.Pool) *UserStore {
 	return &UserStore{db: db}
+}
+
+func (u *User) SetPassword(password string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	u.Password = string(hash)
+
+	return nil
+}
+
+func (u *User) CheckPassword(password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 }
 
 func (s *UserStore) CreateUser(ctx context.Context, user *User) error {
@@ -138,17 +157,17 @@ func (s *UserStore) GetUserByEmail(ctx context.Context, email string) (*User, er
 	return &user, nil
 }
 
-func (u *User) SetPassword(password string) error {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+func (s *UserStore) UpdateUsername(ctx context.Context, username string, userID int64) error {
+	query := `UPDATE users SET username = $1 WHERE id = $2`
+
+	_, err := s.db.Exec(ctx, query, username, userID)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return ErrDuplicateUsername
+		}
 		return err
 	}
 
-	u.Password = string(hash)
-
 	return nil
-}
-
-func (u *User) CheckPassword(password string) error {
-	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 }

@@ -48,6 +48,8 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Get("/post/me", h.GetMyPostsHandler)
 			r.Get("/post/{id}", h.GetUsersPostsHandler)
 			r.Get("/search/{username}", h.SearchProfileHandler)
+
+			r.Post("/update/username", h.UpdateUsername)
 		})
 
 		r.Route("/post", func(r chi.Router) {
