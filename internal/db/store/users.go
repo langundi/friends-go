@@ -158,7 +158,7 @@ func (s *UserStore) GetUserByEmail(ctx context.Context, email string) (*User, er
 	return &user, nil
 }
 
-func (s *UserStore) UpdateUsername(ctx context.Context, username string, userID int64) error {
+func (s *UserStore) ChangeUsername(ctx context.Context, username string, userID int64) error {
 	query := `UPDATE users SET username = $1 WHERE id = $2`
 
 	_, err := s.db.Exec(ctx, query, username, userID)
@@ -173,7 +173,7 @@ func (s *UserStore) UpdateUsername(ctx context.Context, username string, userID 
 	return nil
 }
 
-func (s *UserStore) UpdateEmail(ctx context.Context, email string, userID int64) error {
+func (s *UserStore) ChangeEmail(ctx context.Context, email string, userID int64) error {
 	query := `UPDATE users SET email = $1 WHERE id = $2`
 
 	_, err := s.db.Exec(ctx, query, email, userID)
@@ -185,5 +185,14 @@ func (s *UserStore) UpdateEmail(ctx context.Context, email string, userID int64)
 		return err
 	}
 
+	return nil
+}
+
+func (s *UserStore) ChangePassword(ctx context.Context, hashedPassword string, userID int64) error {
+	query := `UPDATE users SET password = $1 WHERE id = $2`
+	_, err := s.db.Exec(ctx, query, hashedPassword, userID)
+	if err != nil {
+		return err
+	}
 	return nil
 }

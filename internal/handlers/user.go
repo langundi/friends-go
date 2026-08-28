@@ -109,20 +109,20 @@ func (h *UserHandler) SearchProfileHandler(w http.ResponseWriter, r *http.Reques
 	})
 }
 
-func (h *UserHandler) UpdateUsername(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) ChangeUsername(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middlewares.GetUserID(r)
 	if !ok {
 		utils.UnauthorizedError(w, r, ErrUnauthorized)
 		return
 	}
 
-	var req types.UpdateUsernameRequest
+	var req types.ChangeUsernameRequest
 	if err := utils.ReadJson(w, r, &req); err != nil {
 		utils.BadRequestError(w, r, err)
 		return
 	}
 
-	if err := h.userService.UpdateUsername(r.Context(), req.Username, userID); err != nil {
+	if err := h.userService.ChangeUsername(r.Context(), req.Username, userID); err != nil {
 		switch {
 		case errors.Is(err, services.ErrDuplicateUsername):
 			utils.BadRequestError(w, r, err)
@@ -137,23 +137,51 @@ func (h *UserHandler) UpdateUsername(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *UserHandler) UpdateEmail(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) ChangeEmail(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middlewares.GetUserID(r)
 	if !ok {
 		utils.UnauthorizedError(w, r, ErrUnauthorized)
 		return
 	}
 
-	var req types.UpdateEmailRequest
+	var req types.ChangeEmailRequest
 	if err := utils.ReadJson(w, r, &req); err != nil {
 		utils.BadRequestError(w, r, err)
 		return
 	}
 
-	if err := h.userService.UpdateEmail(r.Context(), req.Email, userID); err != nil {
+	if err := h.userService.ChangeEmail(r.Context(), req.Email, userID); err != nil {
 		switch {
 		case errors.Is(err, services.ErrDuplicateEmail):
 			utils.BadRequestError(w, r, err)
+		default:
+			utils.InternalServerError(w, r, err)
+		}
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+	})
+}
+
+func (h *UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, ErrUnauthorized)
+		return
+	}
+
+	var req types.ChangePasswordRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	if err := h.userService.ChangePassword(r.Context(), req, userID); err != nil {
+		switch {
+		case errors.Is(err, services.ErrInvalidPassword):
+			utils.UnauthorizedError(w, r, err)
 		default:
 			utils.InternalServerError(w, r, err)
 		}

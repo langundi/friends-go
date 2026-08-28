@@ -121,10 +121,16 @@ type ReplyResponse struct {
 	Username    string    `json:"username"`
 }
 
-type UpdateUsernameRequest struct {
+type ChangeUsernameRequest struct {
 	Username string `json:"username"`
 }
 
-type UpdateEmailRequest struct {
+type ChangeEmailRequest struct {
 	Email string `json:"email"`
+}
+
+type ChangePasswordRequest struct {
+	Email           string `json:"email"`
+	CurrentPassword string `json:"current_password"`
+	NewPassword     string `json:"new_password"`
 }

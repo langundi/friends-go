@@ -49,8 +49,9 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Get("/post/{id}", h.GetUsersPostsHandler)
 			r.Get("/search/{username}", h.SearchProfileHandler)
 
-			r.Post("/update/username", h.UpdateUsername)
-			r.Post("/update/email", h.UpdateEmail)
+			r.Patch("/change/username", h.ChangeUsername)
+			r.Patch("/change/email", h.ChangeEmail)
+			r.Patch("/change/password", h.ChangePassword)
 		})
 
 		r.Route("/post", func(r chi.Router) {

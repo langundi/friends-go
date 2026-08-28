@@ -5,6 +5,8 @@ import (
 	"errors"
 
 	"github.com/langundi/friends-go/internal/db/store"
+	"github.com/langundi/friends-go/internal/types"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
@@ -15,6 +17,7 @@ var (
 	ErrUserNotFound      = errors.New("User not found.")
 	ErrDuplicateUsername = errors.New("Username already exists.")
 	ErrDuplicateEmail    = errors.New("Email already registered.")
+	ErrInvalidPassword   = errors.New("Current password is incorrect.")
 )
 
 func NewUserService(userStore *store.UserStore) *UserService {
@@ -49,8 +52,8 @@ func (s *UserService) GetUserByUsername(ctx context.Context, username string) (*
 	return user, nil
 }
 
-func (s *UserService) UpdateUsername(ctx context.Context, username string, userID int64) error {
-	err := s.userStore.UpdateUsername(ctx, username, userID)
+func (s *UserService) ChangeUsername(ctx context.Context, username string, userID int64) error {
+	err := s.userStore.ChangeUsername(ctx, username, userID)
 	if err != nil {
 		if errors.Is(err, store.ErrDuplicateUsername) {
 			return ErrDuplicateUsername
@@ -61,8 +64,8 @@ func (s *UserService) UpdateUsername(ctx context.Context, username string, userI
 	return nil
 }
 
-func (s *UserService) UpdateEmail(ctx context.Context, email string, userID int64) error {
-	err := s.userStore.UpdateEmail(ctx, email, userID)
+func (s *UserService) ChangeEmail(ctx context.Context, email string, userID int64) error {
+	err := s.userStore.ChangeEmail(ctx, email, userID)
 	if err != nil {
 		if errors.Is(err, store.ErrDuplicateEmail) {
 			return ErrDuplicateEmail
@@ -71,4 +74,33 @@ func (s *UserService) UpdateEmail(ctx context.Context, email string, userID int6
 	}
 
 	return nil
+}
+
+func (s *UserService) ChangePassword(ctx context.Context, req types.ChangePasswordRequest, userID int64) error {
+	user, err := s.userStore.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		return err
+	}
+
+	if err := user.CheckPassword(req.CurrentPassword); err != nil {
+		return ErrInvalidPassword
+	}
+
+	if err := user.SetPassword(req.NewPassword); err != nil {
+		return err
+	}
+
+	if err := s.userStore.ChangePassword(ctx, user.Password, userID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func hashPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
 }
