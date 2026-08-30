@@ -52,6 +52,8 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Patch("/change/username", h.ChangeUsername)
 			r.Patch("/change/email", h.ChangeEmail)
 			r.Patch("/change/password", h.ChangePassword)
+
+			r.Delete("/delete", h.DeleteAccount)
 		})
 
 		r.Route("/post", func(r chi.Router) {

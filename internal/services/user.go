@@ -52,6 +52,17 @@ func (s *UserService) GetUserByUsername(ctx context.Context, username string) (*
 	return user, nil
 }
 
+func (s *UserService) DeleteUserByID(ctx context.Context, userID int64) error {
+	err := s.userStore.DeleteUserByID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, store.ErrUserNotFound) {
+			return ErrUserNotFound
+		}
+		return err
+	}
+	return nil
+}
+
 func (s *UserService) ChangeUsername(ctx context.Context, username string, userID int64) error {
 	err := s.userStore.ChangeUsername(ctx, username, userID)
 	if err != nil {

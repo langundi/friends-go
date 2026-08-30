@@ -83,6 +83,29 @@ func (h *UserHandler) GetFriendProfileHandler(w http.ResponseWriter, r *http.Req
 	})
 }
 
+func (h *UserHandler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, ErrUnauthorized)
+		return
+	}
+
+	err := h.userService.DeleteUserByID(r.Context(), userID)
+	if err != nil {
+		switch {
+		case errors.Is(err, services.ErrUserNotFound):
+			utils.BadRequestError(w, r, err)
+		default:
+			utils.InternalServerError(w, r, err)
+		}
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+	})
+}
+
 // Search for a user
 func (h *UserHandler) SearchProfileHandler(w http.ResponseWriter, r *http.Request) {
 	username := chi.URLParam(r, "username")
