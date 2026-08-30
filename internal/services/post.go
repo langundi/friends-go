@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	awstypes "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/langundi/friends-go/internal/db/store"
 	"github.com/langundi/friends-go/internal/types"
 )
@@ -65,6 +66,24 @@ func (s *PostService) DeleteImage(ctx context.Context, bucketName, objectKey str
 	_, err := s.r2Client.DeleteObject(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
+	})
+
+	return err
+}
+
+func (s *PostService) DeleteAllImage(ctx context.Context, bucketName string, objectKeys []string) error {
+	var objects []awstypes.ObjectIdentifier
+	for _, key := range objectKeys {
+		objects = append(objects, awstypes.ObjectIdentifier{
+			Key: aws.String(key),
+		})
+	}
+
+	_, err := s.r2Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+		Bucket: aws.String(bucketName),
+		Delete: &awstypes.Delete{
+			Objects: objects,
+		},
 	})
 
 	return err

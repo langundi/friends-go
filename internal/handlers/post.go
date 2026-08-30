@@ -122,6 +122,24 @@ func (h *PostHandler) DeletePostHadler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Delete all image from object storage, used for user account deleteion
+func (h *PostHandler) DeleteAllImageHandler(w http.ResponseWriter, r *http.Request) {
+	var req types.DeleteAllImagesRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	if err := h.postService.DeleteAllImage(r.Context(), h.bucketName, req.ObjectKeys); err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+	})
+}
+
 // Get timeline
 func (h *PostHandler) GetTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middlewares.GetUserID(r)

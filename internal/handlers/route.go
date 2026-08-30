@@ -67,6 +67,7 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Get("/reply/{id}", h.GetPostRepliesHandler)
 
 			r.Delete("/", h.DeletePostHadler)
+			r.Delete("/image/all", h.DeleteAllImageHandler)
 			r.Delete("/unlike/{id}", h.UnlikePostHandler)
 			r.Delete("/reply/{id}", h.DeleteReplyHandler)
 		})
