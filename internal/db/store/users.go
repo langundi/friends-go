@@ -18,8 +18,15 @@ type User struct {
 	Email          string    `json:"email"`
 	Password       string    `json:"-"`
 	ProfilePicture *string   `json:"profile_picture"`
+	ObjectKey      *string   `json:"object_key"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"udpated_at"`
+}
+
+type ProfilePicture struct {
+	UserID    int64
+	ImageURL  string
+	ObjectKey string
 }
 
 type UserStore struct {
@@ -87,7 +94,7 @@ func (s *UserStore) DeleteUserByID(ctx context.Context, id int64) error {
 
 func (s *UserStore) GetUserByID(ctx context.Context, id int64) (*User, error) {
 	query := `
-		SELECT id, username, email, profile_picture
+		SELECT id, username, email, profile_picture, object_key
 		FROM users
 		WHERE id = $1
 	`
@@ -99,6 +106,7 @@ func (s *UserStore) GetUserByID(ctx context.Context, id int64) (*User, error) {
 		&user.Username,
 		&user.Email,
 		&user.ProfilePicture,
+		&user.ObjectKey,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -159,6 +167,21 @@ func (s *UserStore) GetUserByEmail(ctx context.Context, email string) (*User, er
 	}
 
 	return &user, nil
+}
+
+func (s *UserStore) SetProfilePicture(ctx context.Context, profilePicture *ProfilePicture) error {
+	query := `
+		UPDATE users
+		SET
+			profile_picture = $1,
+			object_key = $2
+		WHERE id = $3
+	`
+	_, err := s.db.Exec(ctx, query, profilePicture.ImageURL, profilePicture.ObjectKey, profilePicture.UserID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *UserStore) ChangeUsername(ctx context.Context, username string, userID int64) error {

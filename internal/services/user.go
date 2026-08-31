@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/langundi/friends-go/internal/db/store"
 	"github.com/langundi/friends-go/internal/types"
 	"golang.org/x/crypto/bcrypt"
@@ -11,6 +13,7 @@ import (
 
 type UserService struct {
 	userStore *store.UserStore
+	r2Client  *s3.Client
 }
 
 var (
@@ -20,9 +23,10 @@ var (
 	ErrInvalidPassword   = errors.New("Current password is incorrect.")
 )
 
-func NewUserService(userStore *store.UserStore) *UserService {
+func NewUserService(userStore *store.UserStore, r2Client *s3.Client) *UserService {
 	return &UserService{
 		userStore: userStore,
+		r2Client:  r2Client,
 	}
 }
 
@@ -61,6 +65,35 @@ func (s *UserService) DeleteUserByID(ctx context.Context, userID int64) error {
 		return err
 	}
 	return nil
+}
+
+func (s *UserService) PresignUploadURL(ctx context.Context, bucketName, objectKey, contentType string) (string, error) {
+	presignClient := s3.NewPresignClient(s.r2Client)
+
+	req, err := presignClient.PresignPutObject(ctx, &s3.PutObjectInput{
+		Bucket:      aws.String(bucketName),
+		Key:         aws.String(objectKey),
+		ContentType: aws.String(contentType),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return req.URL, nil
+}
+
+func (s *UserService) SetProfilePicture(ctx context.Context, req types.SetProfilePictureRequest, userID int64) (*store.ProfilePicture, error) {
+	profilePicture := &store.ProfilePicture{
+		UserID:    userID,
+		ImageURL:  req.ImageURL,
+		ObjectKey: req.ObjectKey,
+	}
+
+	err := s.userStore.SetProfilePicture(ctx, profilePicture)
+	if err != nil {
+		return nil, err
+	}
+	return profilePicture, nil
 }
 
 func (s *UserService) ChangeUsername(ctx context.Context, username string, userID int64) error {

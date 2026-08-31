@@ -3,6 +3,8 @@ package utils
 import (
 	"encoding/json"
 	"net/http"
+	"path"
+	"strconv"
 )
 
 type JsonResponse struct {
@@ -42,4 +44,8 @@ func WriteError(w http.ResponseWriter, status int, err error) {
 			Message: err.Error(),
 		},
 	})
+}
+
+func GenerateObjectKey(userID int64, filename, folder string) string {
+	return path.Join(folder, strconv.Itoa(int(userID)), filename+".jpeg")
 }

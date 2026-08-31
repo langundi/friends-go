@@ -43,12 +43,15 @@ func Routes(h HandlerConfig) *chi.Mux {
 		r.Use(middlewares.AuthMiddleware(h.authService))
 
 		r.Route("/user", func(r chi.Router) {
+			r.Post("/upload-image", h.ProfilePicturePresignedURLHandler)
+
 			r.Get("/", h.GetProfileHandler)
 			r.Get("/{id}", h.GetFriendProfileHandler)
 			r.Get("/post/me", h.GetMyPostsHandler)
 			r.Get("/post/{id}", h.GetUsersPostsHandler)
 			r.Get("/search/{username}", h.SearchProfileHandler)
 
+			r.Patch("/profile-picture", h.SetProfilePicture)
 			r.Patch("/change/username", h.ChangeUsername)
 			r.Patch("/change/email", h.ChangeEmail)
 			r.Patch("/change/password", h.ChangePassword)

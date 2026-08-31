@@ -128,6 +128,16 @@ type ReplyResponse struct {
 	Username    string    `json:"username"`
 }
 
+type SetProfilePictureRequest struct {
+	ImageURL  string `json:"image_url"`
+	ObjectKey string `json:"object_key"`
+}
+
+type SetProfilePictureResponse struct {
+	ProfilePicture string `json:"profile_picture"`
+	ObjectKey      string `json:"object_key"`
+}
+
 type ChangeUsernameRequest struct {
 	Username string `json:"username"`
 }

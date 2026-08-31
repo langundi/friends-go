@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -14,6 +15,8 @@ import (
 
 type UserHandler struct {
 	userService *services.UserService
+	bucketName  string
+	publicURL   string
 }
 
 type UserResponse struct {
@@ -21,10 +24,15 @@ type UserResponse struct {
 	Email          string  `json:"email"`
 	Username       string  `json:"username"`
 	ProfilePicture *string `json:"profile_picture"`
+	ObjectKey      *string `json:"object_key"`
 }
 
-func NewUserHandler(userService *services.UserService) *UserHandler {
-	return &UserHandler{userService: userService}
+func NewUserHandler(userService *services.UserService, bucketName, publicURL string) *UserHandler {
+	return &UserHandler{
+		userService: userService,
+		bucketName:  bucketName,
+		publicURL:   publicURL,
+	}
 }
 
 // Get currently logged in profile
@@ -126,6 +134,74 @@ func (h *UserHandler) SearchProfileHandler(w http.ResponseWriter, r *http.Reques
 	response := types.UsernameResponse{
 		ID:       user.ID,
 		Username: user.Username,
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+		Data:    response,
+	})
+}
+
+// Get presigned URL for profile picture upload
+func (h *UserHandler) ProfilePicturePresignedURLHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, ErrUnauthorized)
+		return
+	}
+
+	var req types.UploadImageRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.InvalidPayloadError(w, r, err)
+		return
+	}
+
+	objectKey := utils.GenerateObjectKey(userID, req.Filename, "profile_picture")
+	url, err := h.userService.PresignUploadURL(r.Context(), h.bucketName, objectKey, req.ContentType)
+	if err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	response := types.UploadImageResponse{
+		UploadURL: url,
+		PublicURL: h.publicImageURL(objectKey),
+		ObjectKey: objectKey,
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+		Data:    response,
+	})
+}
+
+func (h *UserHandler) publicImageURL(key string) string {
+	return fmt.Sprintf("%s/%s", h.publicURL, key)
+}
+
+// Set new profile picture
+func (h *UserHandler) SetProfilePicture(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, ErrUnauthorized)
+		return
+	}
+
+	var req types.SetProfilePictureRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	profilePicture, err := h.userService.SetProfilePicture(r.Context(), req, userID)
+	if err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	response := types.SetProfilePictureResponse{
+		ProfilePicture: profilePicture.ImageURL,
+		ObjectKey:      profilePicture.ObjectKey,
 	}
 
 	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{

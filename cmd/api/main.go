@@ -95,13 +95,13 @@ func main() {
 
 	// Create Services
 	authService := services.NewAuthService(userStore, refreshTokenStore, cfg.secret, 1*time.Hour)
-	userService := services.NewUserService(userStore)
+	userService := services.NewUserService(userStore, r2Client)
 	postService := services.NewPostService(postStore, likeStore, replyStore, r2Client)
 	friendService := services.NewFriendService(friendStore)
 
 	// Create Handlers
 	authHandler := handlers.NewAuthHandler(authService)
-	userHandler := handlers.NewUserHandler(userService)
+	userHandler := handlers.NewUserHandler(userService, cfg.r2.bucketName, cfg.r2.publicURL)
 	postHandler := handlers.NewPostHandler(postService, cfg.r2.bucketName, cfg.r2.publicURL)
 	friendHandler := handlers.NewFriendHandler(friendService)
 
