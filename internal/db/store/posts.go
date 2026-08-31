@@ -11,16 +11,17 @@ import (
 )
 
 type Post struct {
-	ID         int64
-	UserID     int64
-	Caption    string
-	ImageURL   string
-	ObjectKey  string
-	LikeCount  int
-	ReplyCount int
-	CreatedAt  time.Time
-	LikedByMe  bool
-	Username   string
+	ID             int64
+	UserID         int64
+	Caption        string
+	ImageURL       string
+	ObjectKey      string
+	LikeCount      int
+	ReplyCount     int
+	CreatedAt      time.Time
+	LikedByMe      bool
+	Username       string
+	ProfilePicture *string
 }
 
 type PostStore struct {
@@ -68,7 +69,7 @@ func (s *PostStore) GetTimeline(ctx context.Context, userID int64) ([]Post, erro
 			EXISTS (
 				SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $1
 			) AS liked_by_me,
-			u.username
+			u.username, u.profile_picture
 		FROM posts p
 		JOIN users u ON u.id = p.user_id
 		WHERE p.user_id = $1
@@ -136,7 +137,7 @@ func (s *PostStore) GetPostsByUserID(ctx context.Context, userID int64) ([]Post,
 			EXISTS (
 				SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $1
 			) AS liked_by_me,
-			u.username
+			u.username, u.profile_picture
 		FROM posts p
 		JOIN users u ON u.id = p.user_id
 		WHERE user_id = $1

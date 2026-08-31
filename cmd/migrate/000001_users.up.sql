@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     username CITEXT NOT NULL UNIQUE,
     email CITEXT NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
+    profile_picture TEXT,
     created_at TIMESTAMPTZ(0) NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ(0) NOT NULL DEFAULT NOW()
 );

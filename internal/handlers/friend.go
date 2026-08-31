@@ -82,6 +82,7 @@ func (h *FriendHandler) GetFriendRequestsHandler(w http.ResponseWriter, r *http.
 			ReceiverID:     v.ReceiverID,
 			Status:         v.Status,
 			CreatedAt:      v.CreatedAt,
+			ProfilePicture: v.ProfilePicture,
 		}
 
 		data = append(data, response)
@@ -178,9 +179,10 @@ func (h *FriendHandler) GetFriendListHandler(w http.ResponseWriter, r *http.Requ
 
 	for _, v := range list {
 		response := types.FriendResponse{
-			ID:       v.ID,
-			UserID:   v.UserID,
-			Username: v.Username,
+			ID:             v.ID,
+			UserID:         v.UserID,
+			Username:       v.Username,
+			ProfilePicture: v.ProfilePicture,
 		}
 
 		data = append(data, response)

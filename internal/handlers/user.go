@@ -17,9 +17,10 @@ type UserHandler struct {
 }
 
 type UserResponse struct {
-	ID       int64  `json:"id"`
-	Email    string `json:"email"`
-	Username string `json:"username"`
+	ID             int64   `json:"id"`
+	Email          string  `json:"email"`
+	Username       string  `json:"username"`
+	ProfilePicture *string `json:"profile_picture"`
 }
 
 func NewUserHandler(userService *services.UserService) *UserHandler {
@@ -41,9 +42,10 @@ func (h *UserHandler) GetProfileHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	response := UserResponse{
-		ID:       user.ID,
-		Email:    user.Email,
-		Username: user.Username,
+		ID:             user.ID,
+		Email:          user.Email,
+		Username:       user.Username,
+		ProfilePicture: user.ProfilePicture,
 	}
 
 	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{

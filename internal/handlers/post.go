@@ -158,16 +158,17 @@ func (h *PostHandler) GetTimelineHandler(w http.ResponseWriter, r *http.Request)
 
 	for _, v := range posts {
 		response := types.PostResponse{
-			ID:         v.ID,
-			UserID:     v.UserID,
-			ImageURL:   v.ImageURL,
-			Caption:    v.Caption,
-			ObjectKey:  v.ObjectKey,
-			LikeCount:  v.LikeCount,
-			ReplyCount: v.ReplyCount,
-			CreatedAt:  v.CreatedAt,
-			LikedByMe:  v.LikedByMe,
-			Username:   v.Username,
+			ID:             v.ID,
+			UserID:         v.UserID,
+			ImageURL:       v.ImageURL,
+			Caption:        v.Caption,
+			ObjectKey:      v.ObjectKey,
+			LikeCount:      v.LikeCount,
+			ReplyCount:     v.ReplyCount,
+			CreatedAt:      v.CreatedAt,
+			LikedByMe:      v.LikedByMe,
+			Username:       v.Username,
+			ProfilePicture: v.ProfilePicture,
 		}
 
 		data = append(data, response)
@@ -371,16 +372,17 @@ func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) 
 
 	for _, v := range posts {
 		response := types.PostResponse{
-			ID:         v.ID,
-			UserID:     v.UserID,
-			Caption:    v.Caption,
-			ImageURL:   v.ImageURL,
-			ObjectKey:  v.ObjectKey,
-			LikeCount:  v.LikeCount,
-			ReplyCount: v.ReplyCount,
-			CreatedAt:  v.CreatedAt,
-			LikedByMe:  v.LikedByMe,
-			Username:   v.Username,
+			ID:             v.ID,
+			UserID:         v.UserID,
+			Caption:        v.Caption,
+			ImageURL:       v.ImageURL,
+			ObjectKey:      v.ObjectKey,
+			LikeCount:      v.LikeCount,
+			ReplyCount:     v.ReplyCount,
+			CreatedAt:      v.CreatedAt,
+			LikedByMe:      v.LikedByMe,
+			Username:       v.Username,
+			ProfilePicture: v.ProfilePicture,
 		}
 
 		data = append(data, response)

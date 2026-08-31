@@ -13,12 +13,13 @@ import (
 )
 
 type User struct {
-	ID        int64     `json:"id"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	Password  string    `json:"-"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"udpated_at"`
+	ID             int64     `json:"id"`
+	Username       string    `json:"username"`
+	Email          string    `json:"email"`
+	Password       string    `json:"-"`
+	ProfilePicture *string   `json:"profile_picture"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"udpated_at"`
 }
 
 type UserStore struct {
@@ -86,7 +87,7 @@ func (s *UserStore) DeleteUserByID(ctx context.Context, id int64) error {
 
 func (s *UserStore) GetUserByID(ctx context.Context, id int64) (*User, error) {
 	query := `
-		SELECT id, username, email
+		SELECT id, username, email, profile_picture
 		FROM users
 		WHERE id = $1
 	`
@@ -97,6 +98,7 @@ func (s *UserStore) GetUserByID(ctx context.Context, id int64) (*User, error) {
 		&user.ID,
 		&user.Username,
 		&user.Email,
+		&user.ProfilePicture,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -110,7 +112,7 @@ func (s *UserStore) GetUserByID(ctx context.Context, id int64) (*User, error) {
 
 func (s *UserStore) GetUserByUsername(ctx context.Context, username string) (*User, error) {
 	query := `
-		SELECT id, username
+		SELECT id, username, profile_picture
 		FROM users
 		WHERE username = $1
 	`
@@ -120,6 +122,7 @@ func (s *UserStore) GetUserByUsername(ctx context.Context, username string) (*Us
 	err := s.db.QueryRow(ctx, query, username).Scan(
 		&user.ID,
 		&user.Username,
+		&user.ProfilePicture,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

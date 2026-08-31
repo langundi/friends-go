@@ -46,16 +46,17 @@ type RefreshResponse struct {
 }
 
 type PostResponse struct {
-	ID         int64     `json:"id"`
-	UserID     int64     `json:"user_id"`
-	Caption    string    `json:"caption"`
-	ImageURL   string    `json:"image_url"`
-	ObjectKey  string    `json:"object_key"`
-	LikeCount  int       `json:"like_count"`
-	ReplyCount int       `json:"reply_count"`
-	CreatedAt  time.Time `json:"created_at"`
-	LikedByMe  bool      `json:"liked_by_me"`
-	Username   string    `json:"username"`
+	ID             int64     `json:"id"`
+	UserID         int64     `json:"user_id"`
+	Caption        string    `json:"caption"`
+	ImageURL       string    `json:"image_url"`
+	ObjectKey      string    `json:"object_key"`
+	LikeCount      int       `json:"like_count"`
+	ReplyCount     int       `json:"reply_count"`
+	CreatedAt      time.Time `json:"created_at"`
+	LikedByMe      bool      `json:"liked_by_me"`
+	Username       string    `json:"username"`
+	ProfilePicture *string   `json:"profile_picture"`
 }
 
 type UploadImageRequest struct {
@@ -98,6 +99,7 @@ type FriendRequestResponse struct {
 	ReceiverID     int64     `json:"receiver_id"`
 	Status         string    `json:"status"`
 	CreatedAt      time.Time `json:"created_at"`
+	ProfilePicture *string   `json:"profile_picture"`
 }
 
 type FriendshipStatusResponse struct {
@@ -105,9 +107,10 @@ type FriendshipStatusResponse struct {
 }
 
 type FriendResponse struct {
-	ID       int64  `json:"id"`
-	UserID   int64  `json:"user_id"`
-	Username string `json:"username"`
+	ID             int64   `json:"id"`
+	UserID         int64   `json:"user_id"`
+	Username       string  `json:"username"`
+	ProfilePicture *string `json:"profile_picture"`
 }
 
 type ReplyRequest struct {
