@@ -155,3 +155,7 @@ type ChangePasswordRequest struct {
 type DeleteProfilePictureRequest struct {
 	Objectkey string `json:"object_key"`
 }
+
+type MoreTimelineRequest struct {
+	CreatedAt time.Time `json:"created_at"`
+}

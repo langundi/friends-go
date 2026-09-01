@@ -83,10 +83,47 @@ func (s *PostStore) GetTimeline(ctx context.Context, userID int64) ([]Post, erro
 				AND f.status = 'accepted'
 			)
 		ORDER BY p.created_at DESC
-		LIMIT 10
+		LIMIT 4
 	`
 
 	rows, err := s.db.Query(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	posts, err := pgx.CollectRows(rows, pgx.RowToStructByName[Post])
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
+}
+
+func (s *PostStore) GetMoreTimeline(ctx context.Context, userID int64, lastCreatedAt time.Time) ([]Post, error) {
+	query := `
+		SELECT p.id, p.user_id, p.caption, p.image_url, p.object_key, p.like_count, p.reply_count, p.created_at,
+			EXISTS (
+				SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $1
+			) AS liked_by_me,
+			u.username, u.profile_picture
+		FROM posts p
+		JOIN users u ON u.id = p.user_id
+		WHERE (p.user_id = $1
+			OR p.user_id IN (
+				SELECT CASE
+					WHEN f.sender_id = $1 THEN f.receiver_id
+					ELSE f.sender_id
+				END
+				FROM friends f
+				WHERE (f.sender_id = $1 or f.receiver_id = $1)
+					AND f.status = 'accepted'
+			))
+			AND p.created_at < $2
+		ORDER BY p.created_at DESC
+		LIMIT 4
+	`
+
+	rows, err := s.db.Query(ctx, query, userID, lastCreatedAt)
 	if err != nil {
 		return nil, err
 	}

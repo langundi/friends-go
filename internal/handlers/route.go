@@ -66,6 +66,7 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Post("/upload-image", h.GetPresignedURLHandler)
 			r.Post("/like/{id}", h.LikePostHandler)
 			r.Post("/reply/{id}", h.ReplyPostHandler)
+			r.Post("/timeline/more", h.GetMoreTimelineHandler)
 
 			r.Get("/{id}", h.GetPostHandler)
 			r.Get("/timeline", h.GetTimelineHandler)

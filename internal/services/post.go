@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -122,6 +123,14 @@ func (s *PostService) GetTimeline(ctx context.Context, userID int64) ([]store.Po
 		return nil, err
 	}
 
+	return posts, nil
+}
+
+func (s *PostService) GetMoreTimeline(ctx context.Context, userID int64, lastCreatedAt time.Time) ([]store.Post, error) {
+	posts, err := s.postStore.GetMoreTimeline(ctx, userID, lastCreatedAt)
+	if err != nil {
+		return nil, err
+	}
 	return posts, nil
 }
 

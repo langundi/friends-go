@@ -144,11 +144,57 @@ func (h *PostHandler) DeleteAllImageHandler(w http.ResponseWriter, r *http.Reque
 func (h *PostHandler) GetTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middlewares.GetUserID(r)
 	if !ok {
-		utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
+		utils.UnauthorizedError(w, r, ErrUnauthorized)
 		return
 	}
 
 	posts, err := h.postService.GetTimeline(r.Context(), userID)
+	if err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	var data []types.PostResponse
+
+	for _, v := range posts {
+		response := types.PostResponse{
+			ID:             v.ID,
+			UserID:         v.UserID,
+			ImageURL:       v.ImageURL,
+			Caption:        v.Caption,
+			ObjectKey:      v.ObjectKey,
+			LikeCount:      v.LikeCount,
+			ReplyCount:     v.ReplyCount,
+			CreatedAt:      v.CreatedAt,
+			LikedByMe:      v.LikedByMe,
+			Username:       v.Username,
+			ProfilePicture: v.ProfilePicture,
+		}
+
+		data = append(data, response)
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+		Data:    data,
+	})
+}
+
+// Get more timeline
+func (h *PostHandler) GetMoreTimelineHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, ErrUnauthorized)
+		return
+	}
+
+	var req types.MoreTimelineRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	posts, err := h.postService.GetMoreTimeline(r.Context(), userID, req.CreatedAt)
 	if err != nil {
 		utils.InternalServerError(w, r, err)
 		return
