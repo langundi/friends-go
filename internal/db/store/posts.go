@@ -83,7 +83,7 @@ func (s *PostStore) GetTimeline(ctx context.Context, userID int64) ([]Post, erro
 				AND f.status = 'accepted'
 			)
 		ORDER BY p.created_at DESC
-		LIMIT 4
+		LIMIT 20
 	`
 
 	rows, err := s.db.Query(ctx, query, userID)
@@ -120,7 +120,7 @@ func (s *PostStore) GetMoreTimeline(ctx context.Context, userID int64, lastCreat
 			))
 			AND p.created_at < $2
 		ORDER BY p.created_at DESC
-		LIMIT 4
+		LIMIT 20
 	`
 
 	rows, err := s.db.Query(ctx, query, userID, lastCreatedAt)
