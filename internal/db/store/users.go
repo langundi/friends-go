@@ -184,6 +184,21 @@ func (s *UserStore) SetProfilePicture(ctx context.Context, profilePicture *Profi
 	return nil
 }
 
+func (s *UserStore) DeleteProfilePicture(ctx context.Context, id int64) error {
+	query := `
+		UPDATE users
+		SET
+			profile_picture = NULL,
+			object_key = NULL
+		WHERE id = $1
+	`
+	_, err := s.db.Exec(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *UserStore) ChangeUsername(ctx context.Context, username string, userID int64) error {
 	query := `UPDATE users SET username = $1 WHERE id = $2`
 

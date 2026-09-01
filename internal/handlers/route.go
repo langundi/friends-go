@@ -57,6 +57,8 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Patch("/change/password", h.ChangePassword)
 
 			r.Delete("/delete", h.DeleteAccount)
+			r.Delete("/profile-picture", h.DeleteProfilePictureHandler)
+			r.Delete("/profile-picture/remove", h.RemoveProfilePictureHandler)
 		})
 
 		r.Route("/post", func(r chi.Router) {

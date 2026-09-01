@@ -54,6 +54,7 @@ func (h *UserHandler) GetProfileHandler(w http.ResponseWriter, r *http.Request) 
 		Email:          user.Email,
 		Username:       user.Username,
 		ProfilePicture: user.ProfilePicture,
+		ObjectKey:      user.ObjectKey,
 	}
 
 	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
@@ -207,6 +208,55 @@ func (h *UserHandler) SetProfilePicture(w http.ResponseWriter, r *http.Request) 
 	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
 		Success: true,
 		Data:    response,
+	})
+}
+
+// Remove image from object storage, used for replacing old profile picture
+func (h *UserHandler) RemoveProfilePictureHandler(w http.ResponseWriter, r *http.Request) {
+	var req types.DeleteProfilePictureRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	if err := h.userService.RemoveProfilePicture(r.Context(), h.bucketName, req.Objectkey); err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+	})
+}
+
+// Delete profile picture from object storage and database, used for removing profile picture
+func (h *UserHandler) DeleteProfilePictureHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, ErrUnauthorized)
+		return
+	}
+
+	var req types.DeleteProfilePictureRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	// Delete profile picture from object storage
+	if err := h.userService.RemoveProfilePicture(r.Context(), h.bucketName, req.Objectkey); err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	// Delete profile picture from database
+	if err := h.userService.DeleteProfilePicture(r.Context(), userID); err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
 	})
 }
 

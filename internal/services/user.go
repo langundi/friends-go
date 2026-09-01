@@ -96,6 +96,22 @@ func (s *UserService) SetProfilePicture(ctx context.Context, req types.SetProfil
 	return profilePicture, nil
 }
 
+func (s *UserService) RemoveProfilePicture(ctx context.Context, bucketName, objectKey string) error {
+	_, err := s.r2Client.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objectKey),
+	})
+
+	return err
+}
+
+func (s *UserService) DeleteProfilePicture(ctx context.Context, id int64) error {
+	if err := s.userStore.DeleteProfilePicture(ctx, id); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *UserService) ChangeUsername(ctx context.Context, username string, userID int64) error {
 	err := s.userStore.ChangeUsername(ctx, username, userID)
 	if err != nil {
