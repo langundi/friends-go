@@ -64,34 +64,46 @@ func Routes(h HandlerConfig) *chi.Mux {
 		r.Route("/post", func(r chi.Router) {
 			r.Post("/", h.NewPostHandler)
 			r.Post("/upload-image", h.GetPresignedURLHandler)
-			r.Post("/like/{id}", h.LikePostHandler)
-			r.Post("/reply/{id}", h.ReplyPostHandler)
-			r.Post("/timeline/more", h.GetMoreTimelineHandler)
-
-			r.Get("/{id}", h.GetPostHandler)
-			r.Get("/timeline", h.GetTimelineHandler)
-			r.Get("/reply/{id}", h.GetPostRepliesHandler)
-
-			r.Delete("/", h.DeletePostHadler)
 			r.Delete("/image/all", h.DeleteAllImageHandler)
-			r.Delete("/unlike/{id}", h.UnlikePostHandler)
-			r.Delete("/reply/{id}", h.DeleteReplyHandler)
+
+			r.Route("/timeline", func(r chi.Router) {
+				r.Get("/", h.GetTimelineHandler)
+				r.Post("/more", h.GetMoreTimelineHandler)
+			})
+
+			r.Route("/{id}", func(r chi.Router) {
+				r.Get("/", h.GetPostHandler)
+				r.Get("/replies", h.GetPostRepliesHandler)
+
+				r.Post("/like", h.LikePostHandler)
+				r.Post("/reply", h.ReplyPostHandler)
+
+				r.Delete("/", h.DeletePostHadler)
+				r.Delete("/unlike", h.UnlikePostHandler)
+				r.Delete("/reply", h.DeleteReplyHandler)
+			})
+
+			// r.Get("/timeline", h.GetTimelineHandler)
+			// r.Post("/timeline/more", h.GetMoreTimelineHandler)
+
+			// r.Get("/{id}", h.GetPostHandler)
+			// r.Get("/reply/{id}", h.GetPostRepliesHandler)
+			// r.Post("/like/{id}", h.LikePostHandler)
+			// r.Post("/reply/{id}", h.ReplyPostHandler)
+			// r.Delete("/unlike/{id}", h.UnlikePostHandler)
+			// r.Delete("/reply/{id}", h.DeleteReplyHandler)
 		})
 
 		r.Route("/friend-request", func(r chi.Router) {
-			r.Post("/{id}", h.CreateFriendRequestHandler)
-
 			r.Get("/", h.GetFriendRequestsHandler)
-
+			r.Post("/{id}", h.CreateFriendRequestHandler)
 			r.Patch("/{id}", h.AcceptFriendRequestHandler)
-
 			r.Delete("/{id}", h.DeclineOrUnfriendFriendHandler)
 		})
 
 		r.Route("/friend", func(r chi.Router) {
 			r.Get("/", h.GetFriendListHandler)
 			r.Get("/{id}/status", h.GetFriendshipStatusHandler)
-
 			r.Delete("/{id}", h.DeclineOrUnfriendFriendHandler)
 		})
 	})

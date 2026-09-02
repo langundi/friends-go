@@ -99,6 +99,12 @@ func (h *PostHandler) GetPresignedURLHandler(w http.ResponseWriter, r *http.Requ
 
 // Delete existing post
 func (h *PostHandler) DeletePostHadler(w http.ResponseWriter, r *http.Request) {
+	postID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
 	var req types.DeletePostRequest
 	if err := utils.ReadJson(w, r, &req); err != nil {
 		utils.InvalidPayloadError(w, r, err)
@@ -112,7 +118,7 @@ func (h *PostHandler) DeletePostHadler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Delete post from database
-	if err := h.postService.DeletePostByID(r.Context(), req.ID); err != nil {
+	if err := h.postService.DeletePostByID(r.Context(), postID); err != nil {
 		utils.InternalServerError(w, r, err)
 		return
 	}

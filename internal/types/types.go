@@ -71,7 +71,6 @@ type UploadImageResponse struct {
 }
 
 type DeletePostRequest struct {
-	ID        int64  `json:"id"`
 	ObjectKey string `json:"object_key"`
 }
 
