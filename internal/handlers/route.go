@@ -43,22 +43,28 @@ func Routes(h HandlerConfig) *chi.Mux {
 		r.Use(middlewares.AuthMiddleware(h.authService))
 
 		r.Route("/user", func(r chi.Router) {
-			r.Post("/upload-image", h.ProfilePicturePresignedURLHandler)
-
 			r.Get("/", h.GetProfileHandler)
-			r.Get("/{id}", h.GetFriendProfileHandler)
-			r.Get("/post/me", h.GetMyPostsHandler)
-			r.Get("/post/{id}", h.GetUsersPostsHandler)
+			r.Get("/me/posts", h.GetMyPostsHandler)
 			r.Get("/search/{username}", h.SearchProfileHandler)
-
-			r.Patch("/profile-picture", h.SetProfilePicture)
-			r.Patch("/change/username", h.ChangeUsername)
-			r.Patch("/change/email", h.ChangeEmail)
-			r.Patch("/change/password", h.ChangePassword)
-
+			r.Post("/upload-image", h.ProfilePicturePresignedURLHandler)
 			r.Delete("/delete", h.DeleteAccount)
-			r.Delete("/profile-picture", h.DeleteProfilePictureHandler)
-			r.Delete("/profile-picture/remove", h.RemoveProfilePictureHandler)
+
+			r.Route("/{id}", func(r chi.Router) {
+				r.Get("/", h.GetFriendProfileHandler)
+				r.Get("/posts", h.GetUsersPostsHandler)
+			})
+
+			r.Route("/change", func(r chi.Router) {
+				r.Patch("/username", h.ChangeUsername)
+				r.Patch("/email", h.ChangeEmail)
+				r.Patch("/password", h.ChangePassword)
+			})
+
+			r.Route("/profile-picture", func(r chi.Router) {
+				r.Patch("/", h.SetProfilePicture)
+				r.Delete("/", h.DeleteProfilePictureHandler)
+				r.Delete("/remove", h.RemoveProfilePictureHandler)
+			})
 		})
 
 		r.Route("/post", func(r chi.Router) {
@@ -74,24 +80,12 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Route("/{id}", func(r chi.Router) {
 				r.Get("/", h.GetPostHandler)
 				r.Get("/replies", h.GetPostRepliesHandler)
-
 				r.Post("/like", h.LikePostHandler)
 				r.Post("/reply", h.ReplyPostHandler)
-
 				r.Delete("/", h.DeletePostHadler)
 				r.Delete("/unlike", h.UnlikePostHandler)
 				r.Delete("/reply", h.DeleteReplyHandler)
 			})
-
-			// r.Get("/timeline", h.GetTimelineHandler)
-			// r.Post("/timeline/more", h.GetMoreTimelineHandler)
-
-			// r.Get("/{id}", h.GetPostHandler)
-			// r.Get("/reply/{id}", h.GetPostRepliesHandler)
-			// r.Post("/like/{id}", h.LikePostHandler)
-			// r.Post("/reply/{id}", h.ReplyPostHandler)
-			// r.Delete("/unlike/{id}", h.UnlikePostHandler)
-			// r.Delete("/reply/{id}", h.DeleteReplyHandler)
 		})
 
 		r.Route("/friend-request", func(r chi.Router) {
