@@ -414,7 +414,7 @@ func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	posts, err := h.postService.GetPostsByUserID(r.Context(), userID)
+	posts, err := h.postService.GetMyPosts(r.Context(), userID)
 	if err != nil {
 		utils.NotFoundError(w, r, err)
 		return
@@ -446,14 +446,21 @@ func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-func (h *PostHandler) GetUsersPostsHandler(w http.ResponseWriter, r *http.Request) {
-	userID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+// Get posts from a friend
+func (h *PostHandler) GetFriendPostsHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
+		return
+	}
+
+	friendID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		utils.BadRequestError(w, r, err)
 		return
 	}
 
-	posts, err := h.postService.GetPostsByUserID(r.Context(), userID)
+	posts, err := h.postService.GetFriendPosts(r.Context(), friendID, userID)
 	if err != nil {
 		utils.NotFoundError(w, r, err)
 		return
@@ -463,12 +470,17 @@ func (h *PostHandler) GetUsersPostsHandler(w http.ResponseWriter, r *http.Reques
 
 	for _, v := range posts {
 		response := types.PostResponse{
-			ID:        v.ID,
-			UserID:    v.UserID,
-			Caption:   v.Caption,
-			ImageURL:  v.ImageURL,
-			ObjectKey: v.ObjectKey,
-			CreatedAt: v.CreatedAt,
+			ID:             v.ID,
+			UserID:         v.UserID,
+			Caption:        v.Caption,
+			ImageURL:       v.ImageURL,
+			ObjectKey:      v.ObjectKey,
+			LikeCount:      v.LikeCount,
+			ReplyCount:     v.ReplyCount,
+			CreatedAt:      v.CreatedAt,
+			LikedByMe:      v.LikedByMe,
+			Username:       v.Username,
+			ProfilePicture: v.ProfilePicture,
 		}
 
 		data = append(data, response)

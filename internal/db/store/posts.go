@@ -168,7 +168,7 @@ func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {
 	return &post, nil
 }
 
-func (s *PostStore) GetPostsByUserID(ctx context.Context, userID int64) ([]Post, error) {
+func (s *PostStore) GetMyPosts(ctx context.Context, userID int64) ([]Post, error) {
 	query := `
 		SELECT p.id, p.user_id, p.caption, p.image_url, p.object_key, p.like_count, p.reply_count, p.created_at,
 			EXISTS (
@@ -182,6 +182,32 @@ func (s *PostStore) GetPostsByUserID(ctx context.Context, userID int64) ([]Post,
 	`
 
 	rows, err := s.db.Query(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	posts, err := pgx.CollectRows(rows, pgx.RowToStructByName[Post])
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
+}
+
+func (s *PostStore) GetFriendPosts(ctx context.Context, friendID, userID int64) ([]Post, error) {
+	query := `
+		SELECT p.id, p.user_id, p.caption, p.image_url, p.object_key, p.like_count, p.reply_count, p.created_at,
+			EXISTS (
+				SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $2
+			) AS liked_by_me,
+			u.username, u.profile_picture
+		FROM posts p
+		JOIN users u ON u.id = p.user_id
+		WHERE user_id = $1
+		ORDER BY created_at DESC
+	`
+
+	rows, err := s.db.Query(ctx, query, friendID, userID)
 	if err != nil {
 		return nil, err
 	}

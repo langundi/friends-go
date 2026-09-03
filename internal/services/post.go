@@ -108,8 +108,17 @@ func (s *PostService) GetPostByID(ctx context.Context, id int64) (*store.Post, e
 	return post, nil
 }
 
-func (s *PostService) GetPostsByUserID(ctx context.Context, userID int64) ([]store.Post, error) {
-	posts, err := s.postStore.GetPostsByUserID(ctx, userID)
+func (s *PostService) GetMyPosts(ctx context.Context, userID int64) ([]store.Post, error) {
+	posts, err := s.postStore.GetMyPosts(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
+}
+
+func (s *PostService) GetFriendPosts(ctx context.Context, friendID int64, userID int64) ([]store.Post, error) {
+	posts, err := s.postStore.GetFriendPosts(ctx, friendID, userID)
 	if err != nil {
 		return nil, err
 	}

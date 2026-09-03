@@ -51,7 +51,7 @@ func Routes(h HandlerConfig) *chi.Mux {
 
 			r.Route("/{id}", func(r chi.Router) {
 				r.Get("/", h.GetFriendProfileHandler)
-				r.Get("/posts", h.GetUsersPostsHandler)
+				r.Get("/posts", h.GetFriendPostsHandler)
 			})
 
 			r.Route("/change", func(r chi.Router) {
