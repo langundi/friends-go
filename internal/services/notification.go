@@ -81,16 +81,5 @@ func messageBuilder(username string, reply *string, action NotificationAction) s
 	}
 }
 
-// func titleBuilder(username string, action NotificationAction) string {
-// 	switch action {
-// 	case Like:
-// 		return username + " liked your post."
-// 	case Reply:
-// 		return username + " replied to your post."
-// 	default:
-// 		panic(fmt.Errorf("unknown action: %v", action))
-// 	}
-// }
-
 // Notify Friend Request
 // Notify Accept Friend Request
