@@ -117,8 +117,9 @@ type FriendResponse struct {
 }
 
 type ReplyRequest struct {
-	Reply    string `json:"reply"`
-	Username string `json:"username"`
+	Reply      string `json:"reply"`
+	Username   string `json:"username"`
+	ReceiverID int64  `json:"receiver_id"`
 }
 
 type ReplyResponse struct {

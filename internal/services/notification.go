@@ -1,10 +1,12 @@
 package services
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/langundi/friends-go/internal/db/store"
 	"github.com/langundi/friends-go/internal/notification"
+	"github.com/langundi/friends-go/internal/types"
 )
 
 type NotificationService struct {
@@ -26,51 +28,69 @@ func NewNotificationService(apns *notification.APNsClient, deviceStore *store.De
 	}
 }
 
-// Notify Like
-func (s *NotificationService) NotifyLike(tokens []store.DeviceToken, senderUsername string) {
-	// tokens, err := s.deviceStore.GetDeviceTokens(ctx, req.ReceiverID)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// if len(tokens) == 0 {
-	// 	return nil
-	// }
-
-	title := titleBuilder(Like)
-	message := messageBuilder(senderUsername, Like)
-
-	for _, t := range tokens {
-		s.apns.SendNotification(t.Token, title, message)
-		// if err != nil {
-		// 	return err
-		// }
+// Notify like
+func (s *NotificationService) NotifyLike(ctx context.Context, req types.LikeNotificationRequest) error {
+	tokens, err := s.deviceStore.GetDeviceTokens(ctx, req.ReceiverID)
+	if err != nil {
+		return err
 	}
-	// return nil
+
+	if len(tokens) == 0 {
+		return nil
+	}
+
+	message := messageBuilder(req.SenderUsername, nil, Like)
+
+	go func() {
+		for _, t := range tokens {
+			s.apns.SendNotification(t.Token, message)
+		}
+	}()
+	return nil
 }
 
-func titleBuilder(action NotificationAction) string {
-	switch action {
-	case Like:
-		return "Someone liked your post."
-	case Reply:
-		return "Someone replied to your post."
-	default:
-		panic(fmt.Errorf("unknown action: %v", action))
+// Notify reply
+func (s *NotificationService) NotifyReply(ctx context.Context, req types.ReplyRequest) error {
+	tokens, err := s.deviceStore.GetDeviceTokens(ctx, req.ReceiverID)
+	if err != nil {
+		return err
 	}
+
+	if len(tokens) == 0 {
+		return nil
+	}
+
+	message := messageBuilder(req.Username, &req.Reply, Reply)
+
+	go func() {
+		for _, t := range tokens {
+			s.apns.SendNotification(t.Token, message)
+		}
+	}()
+	return nil
 }
 
-func messageBuilder(username string, action NotificationAction) string {
+func messageBuilder(username string, reply *string, action NotificationAction) string {
 	switch action {
 	case Like:
 		return username + " liked your post."
 	case Reply:
-		return username + " replied to your post."
+		return username + " replied to your post: " + *reply
 	default:
 		panic(fmt.Errorf("unknown action: %v", action))
 	}
 }
 
-// Notify Reply
+// func titleBuilder(username string, action NotificationAction) string {
+// 	switch action {
+// 	case Like:
+// 		return username + " liked your post."
+// 	case Reply:
+// 		return username + " replied to your post."
+// 	default:
+// 		panic(fmt.Errorf("unknown action: %v", action))
+// 	}
+// }
+
 // Notify Friend Request
 // Notify Accept Friend Request

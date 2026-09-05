@@ -45,9 +45,8 @@ func NewAPNsClient(authKeyPath, keyID, teamID, topic string, production bool) (*
 	return apns, nil
 }
 
-func (s *APNsClient) SendNotification(deviceToken, title, message string) {
+func (s *APNsClient) SendNotification(deviceToken, message string) {
 	payload := payload.NewPayload()
-	payload.AlertTitle(title)
 	payload.AlertBody(message)
 
 	notification := &apns2.Notification{

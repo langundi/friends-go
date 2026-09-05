@@ -144,19 +144,15 @@ func (s *PostService) LikePost(ctx context.Context, senderID, postID int64, req 
 	if err != nil {
 		return err
 	}
+
 	if senderID == req.ReceiverID {
 		return nil
 	}
 
-	tokens, err := s.deviceTokenStore.GetDeviceTokens(ctx, req.ReceiverID)
-	if err != nil {
+	if err := s.notificationService.NotifyLike(ctx, req); err != nil {
 		return err
 	}
-	if len(tokens) == 0 {
-		return nil
-	}
 
-	go s.notificationService.NotifyLike(tokens, req.SenderUsername)
 	return nil
 }
 
@@ -189,6 +185,15 @@ func (s *PostService) ReplyPost(ctx context.Context, userID, postID int64, req t
 	if err != nil {
 		return nil, err
 	}
+
+	if userID == req.ReceiverID {
+		return reply, nil
+	}
+
+	if err := s.notificationService.NotifyReply(ctx, req); err != nil {
+		return nil, err
+	}
+
 	return reply, nil
 }
 
