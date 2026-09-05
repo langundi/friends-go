@@ -1,13 +1,10 @@
 package services
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/langundi/friends-go/internal/db/store"
 	"github.com/langundi/friends-go/internal/notification"
-
-	"github.com/langundi/friends-go/internal/types"
 )
 
 type NotificationService struct {
@@ -30,26 +27,26 @@ func NewNotificationService(apns *notification.APNsClient, deviceStore *store.De
 }
 
 // Notify Like
-func (s *NotificationService) NotifyLike(ctx context.Context, req types.LikeNotificationRequest) error {
-	tokens, err := s.deviceStore.GetDeviceTokens(ctx, req.ReceiverID)
-	if err != nil {
-		return err
-	}
+func (s *NotificationService) NotifyLike(tokens []store.DeviceToken, senderUsername string) {
+	// tokens, err := s.deviceStore.GetDeviceTokens(ctx, req.ReceiverID)
+	// if err != nil {
+	// 	return err
+	// }
 
-	if len(tokens) == 0 {
-		return nil
-	}
+	// if len(tokens) == 0 {
+	// 	return nil
+	// }
 
 	title := titleBuilder(Like)
-	message := messageBuilder(req.SenderUsername, Like)
+	message := messageBuilder(senderUsername, Like)
 
 	for _, t := range tokens {
-		err := s.apns.SendNotification(t.Token, title, message)
-		if err != nil {
-			return err
-		}
+		s.apns.SendNotification(t.Token, title, message)
+		// if err != nil {
+		// 	return err
+		// }
 	}
-	return nil
+	// return nil
 }
 
 func titleBuilder(action NotificationAction) string {

@@ -121,7 +121,7 @@ func main() {
 	notificationService := services.NewNotificationService(apns, deviceTokenStore)
 	authService := services.NewAuthService(userStore, refreshTokenStore, cfg.secret, 1*time.Hour)
 	userService := services.NewUserService(userStore, r2Client)
-	postService := services.NewPostService(postStore, likeStore, replyStore, r2Client, notificationService)
+	postService := services.NewPostService(postStore, likeStore, replyStore, deviceTokenStore, r2Client, notificationService)
 	friendService := services.NewFriendService(friendStore)
 	deviceTokenService := services.NewDeviceTokenService(deviceTokenStore)
 

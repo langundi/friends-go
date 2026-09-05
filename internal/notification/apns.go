@@ -45,7 +45,7 @@ func NewAPNsClient(authKeyPath, keyID, teamID, topic string, production bool) (*
 	return apns, nil
 }
 
-func (s *APNsClient) SendNotification(deviceToken, title, message string) error {
+func (s *APNsClient) SendNotification(deviceToken, title, message string) {
 	payload := payload.NewPayload()
 	payload.AlertTitle(title)
 	payload.AlertBody(message)
@@ -56,15 +56,11 @@ func (s *APNsClient) SendNotification(deviceToken, title, message string) error 
 		Payload:     payload,
 	}
 
-	res, err := s.Client.Push(notification)
-	if err != nil {
-		return err
-	}
+	res, _ := s.Client.Push(notification)
 
 	if res.Sent() {
 		slog.Info("push notification sent", "id", res.ApnsID)
 	} else {
 		slog.Error("push notification not sent", "id", res.ApnsID, "status", res.StatusCode, "reson", res.Reason)
 	}
-	return nil
 }

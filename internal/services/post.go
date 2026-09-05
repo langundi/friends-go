@@ -16,6 +16,7 @@ type PostService struct {
 	postStore           *store.PostStore
 	likeStore           *store.LikeStore
 	replyStore          *store.ReplyStore
+	deviceTokenStore    *store.DeviceTokenStore
 	r2Client            *s3.Client
 	notificationService *NotificationService
 }
@@ -24,11 +25,12 @@ var (
 	ErrPostNotFound = errors.New("Post not found.")
 )
 
-func NewPostService(postStore *store.PostStore, likeStore *store.LikeStore, replyStore *store.ReplyStore, r2Client *s3.Client, notificationService *NotificationService) *PostService {
+func NewPostService(postStore *store.PostStore, likeStore *store.LikeStore, replyStore *store.ReplyStore, deviceTokenStore *store.DeviceTokenStore, r2Client *s3.Client, notificationService *NotificationService) *PostService {
 	return &PostService{
 		postStore:           postStore,
 		likeStore:           likeStore,
 		replyStore:          replyStore,
+		deviceTokenStore:    deviceTokenStore,
 		r2Client:            r2Client,
 		notificationService: notificationService,
 	}
@@ -142,15 +144,19 @@ func (s *PostService) LikePost(ctx context.Context, senderID, postID int64, req 
 	if err != nil {
 		return err
 	}
-
 	if senderID == req.ReceiverID {
 		return nil
 	}
 
-	if err := s.notificationService.NotifyLike(ctx, req); err != nil {
+	tokens, err := s.deviceTokenStore.GetDeviceTokens(ctx, req.ReceiverID)
+	if err != nil {
 		return err
 	}
+	if len(tokens) == 0 {
+		return nil
+	}
 
+	go s.notificationService.NotifyLike(tokens, req.SenderUsername)
 	return nil
 }
 
