@@ -13,6 +13,7 @@ type HandlerConfig struct {
 	*UserHandler
 	*PostHandler
 	*FriendHandler
+	*DeviceTokenHandler
 }
 
 func Routes(h HandlerConfig) *chi.Mux {
@@ -41,6 +42,11 @@ func Routes(h HandlerConfig) *chi.Mux {
 
 	r.Group(func(r chi.Router) {
 		r.Use(middlewares.AuthMiddleware(h.authService))
+
+		r.Route("/device-token", func(r chi.Router) {
+			r.Post("/register", h.RegisterDeviceToken)
+			r.Delete("/delete", h.DeleteDeviceToken)
+		})
 
 		r.Route("/user", func(r chi.Router) {
 			r.Get("/", h.GetProfileHandler)

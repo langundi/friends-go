@@ -274,7 +274,13 @@ func (h *PostHandler) LikePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.postService.LikePost(r.Context(), userID, postID); err != nil {
+	var req types.LikeNotificationRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	if err := h.postService.LikePost(r.Context(), userID, postID, req); err != nil {
 		utils.InternalServerError(w, r, err)
 		return
 	}
@@ -410,7 +416,7 @@ func (h *PostHandler) DeleteReplyHandler(w http.ResponseWriter, r *http.Request)
 func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middlewares.GetUserID(r)
 	if !ok {
-		utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
+		utils.UnauthorizedError(w, r, ErrUnauthorized)
 		return
 	}
 

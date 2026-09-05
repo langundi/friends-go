@@ -14,6 +14,7 @@ import (
 	"github.com/langundi/friends-go/internal/db"
 	"github.com/langundi/friends-go/internal/db/store"
 	"github.com/langundi/friends-go/internal/handlers"
+	"github.com/langundi/friends-go/internal/notification"
 	"github.com/langundi/friends-go/internal/services"
 )
 
@@ -21,6 +22,7 @@ type config struct {
 	addr   string
 	db     dbConfig
 	r2     r2Config
+	apns   apnsConfig
 	secret string
 }
 
@@ -37,6 +39,14 @@ type r2Config struct {
 	secretKey  string
 	bucketName string
 	publicURL  string
+}
+
+type apnsConfig struct {
+	authKeyPath string
+	keyID       string
+	teamID      string
+	topic       string
+	production  string
 }
 
 func main() {
@@ -58,6 +68,13 @@ func main() {
 			secretKey:  getString("R2_SECRET_ACCESS_KEY", ""),
 			bucketName: getString("R2_BUCKET_NAME", ""),
 			publicURL:  getString("R2_PUBLIC_DEV_URL", ""),
+		},
+		apns: apnsConfig{
+			authKeyPath: "./AuthKey_FW2PL76896.p8",
+			keyID:       getString("KEY_ID", ""),
+			teamID:      getString("TEAM_ID", ""),
+			topic:       getString("BUNDLE_ID", ""),
+			production:  getString("APNS_ENV", "development"),
 		},
 		secret: getString("SECRET_KEY", ""),
 	}
@@ -84,32 +101,43 @@ func main() {
 	friendStore := store.NewFriendStore(db)
 	likeStore := store.NewLikeStore(db)
 	replyStore := store.NewReplyStore(db)
+	deviceTokenStore := store.NewDeviceTokenStore(db)
 
 	ctx := context.Background()
 
-	// Create Bucket
+	// Create R2 Client
 	r2Client, err := bucket.NewR2Client(ctx, cfg.r2.accountID, cfg.r2.accessKey, cfg.r2.secretKey)
 	if err != nil {
 		log.Fatalf("r2 setup failed: %v", err)
 	}
 
+	// Create APNs Client
+	apns, err := notification.NewAPNsClient(cfg.apns.authKeyPath, cfg.apns.keyID, cfg.apns.teamID, cfg.apns.topic, cfg.apns.production == "production")
+	if err != nil {
+		log.Fatalf("apns setup failed: %v", err)
+	}
+
 	// Create Services
+	notificationService := services.NewNotificationService(apns, deviceTokenStore)
 	authService := services.NewAuthService(userStore, refreshTokenStore, cfg.secret, 1*time.Hour)
 	userService := services.NewUserService(userStore, r2Client)
-	postService := services.NewPostService(postStore, likeStore, replyStore, r2Client)
+	postService := services.NewPostService(postStore, likeStore, replyStore, r2Client, notificationService)
 	friendService := services.NewFriendService(friendStore)
+	deviceTokenService := services.NewDeviceTokenService(deviceTokenStore)
 
 	// Create Handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userService, cfg.r2.bucketName, cfg.r2.publicURL)
 	postHandler := handlers.NewPostHandler(postService, cfg.r2.bucketName, cfg.r2.publicURL)
 	friendHandler := handlers.NewFriendHandler(friendService)
+	deviceTokenHandler := handlers.NewDeviceHandler(deviceTokenService)
 
 	handlerCfg := handlers.HandlerConfig{
-		AuthHandler:   authHandler,
-		UserHandler:   userHandler,
-		PostHandler:   postHandler,
-		FriendHandler: friendHandler,
+		AuthHandler:        authHandler,
+		UserHandler:        userHandler,
+		PostHandler:        postHandler,
+		FriendHandler:      friendHandler,
+		DeviceTokenHandler: deviceTokenHandler,
 	}
 
 	// Starting Server
@@ -133,7 +161,6 @@ func getString(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
-
 	return fallback
 }
 
@@ -143,9 +170,7 @@ func getInt(key string, fallback int) int {
 		if err != nil {
 			return fallback
 		}
-
 		return intValue
 	}
-
 	return fallback
 }

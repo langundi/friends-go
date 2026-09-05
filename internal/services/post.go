@@ -13,22 +13,24 @@ import (
 )
 
 type PostService struct {
-	postStore  *store.PostStore
-	likeStore  *store.LikeStore
-	replyStore *store.ReplyStore
-	r2Client   *s3.Client
+	postStore           *store.PostStore
+	likeStore           *store.LikeStore
+	replyStore          *store.ReplyStore
+	r2Client            *s3.Client
+	notificationService *NotificationService
 }
 
 var (
 	ErrPostNotFound = errors.New("Post not found.")
 )
 
-func NewPostService(postStore *store.PostStore, likeStore *store.LikeStore, replyStore *store.ReplyStore, r2Client *s3.Client) *PostService {
+func NewPostService(postStore *store.PostStore, likeStore *store.LikeStore, replyStore *store.ReplyStore, r2Client *s3.Client, notificationService *NotificationService) *PostService {
 	return &PostService{
-		postStore:  postStore,
-		likeStore:  likeStore,
-		replyStore: replyStore,
-		r2Client:   r2Client,
+		postStore:           postStore,
+		likeStore:           likeStore,
+		replyStore:          replyStore,
+		r2Client:            r2Client,
+		notificationService: notificationService,
 	}
 }
 
@@ -44,7 +46,6 @@ func (s *PostService) NewPost(ctx context.Context, req types.NewPostRequest, use
 	if err != nil {
 		return nil, err
 	}
-
 	return post, nil
 }
 
@@ -56,10 +57,10 @@ func (s *PostService) PresignUploadURL(ctx context.Context, bucketName, objectKe
 		Key:         aws.String(objectKey),
 		ContentType: aws.String(contentType),
 	})
+
 	if err != nil {
 		return "", err
 	}
-
 	return req.URL, nil
 }
 
@@ -68,7 +69,6 @@ func (s *PostService) DeleteImage(ctx context.Context, bucketName, objectKey str
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 	})
-
 	return err
 }
 
@@ -86,7 +86,6 @@ func (s *PostService) DeleteAllImage(ctx context.Context, bucketName string, obj
 			Objects: objects,
 		},
 	})
-
 	return err
 }
 
@@ -95,7 +94,6 @@ func (s *PostService) DeletePostByID(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -104,7 +102,6 @@ func (s *PostService) GetPostByID(ctx context.Context, id int64) (*store.Post, e
 	if err != nil {
 		return nil, ErrPostNotFound
 	}
-
 	return post, nil
 }
 
@@ -113,7 +110,6 @@ func (s *PostService) GetMyPosts(ctx context.Context, userID int64) ([]store.Pos
 	if err != nil {
 		return nil, err
 	}
-
 	return posts, nil
 }
 
@@ -122,7 +118,6 @@ func (s *PostService) GetFriendPosts(ctx context.Context, friendID int64, userID
 	if err != nil {
 		return nil, err
 	}
-
 	return posts, nil
 }
 
@@ -131,7 +126,6 @@ func (s *PostService) GetTimeline(ctx context.Context, userID int64) ([]store.Po
 	if err != nil {
 		return nil, err
 	}
-
 	return posts, nil
 }
 
@@ -143,9 +137,17 @@ func (s *PostService) GetMoreTimeline(ctx context.Context, userID int64, lastCre
 	return posts, nil
 }
 
-func (s *PostService) LikePost(ctx context.Context, userID, postID int64) error {
-	err := s.likeStore.LikePost(ctx, userID, postID)
+func (s *PostService) LikePost(ctx context.Context, senderID, postID int64, req types.LikeNotificationRequest) error {
+	err := s.likeStore.LikePost(ctx, senderID, postID)
 	if err != nil {
+		return err
+	}
+
+	if senderID == req.ReceiverID {
+		return nil
+	}
+
+	if err := s.notificationService.NotifyLike(ctx, req); err != nil {
 		return err
 	}
 
@@ -157,7 +159,6 @@ func (s *PostService) UnlikePost(ctx context.Context, userID, postID int64) erro
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -166,7 +167,6 @@ func (s *PostService) GetRepliesForPost(ctx context.Context, userID, postID int6
 	if err != nil {
 		return nil, err
 	}
-
 	return replies, nil
 }
 
@@ -183,7 +183,6 @@ func (s *PostService) ReplyPost(ctx context.Context, userID, postID int64, req t
 	if err != nil {
 		return nil, err
 	}
-
 	return reply, nil
 }
 
@@ -192,6 +191,5 @@ func (s *PostService) DeleteReply(ctx context.Context, replyID int64) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }

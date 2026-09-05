@@ -1,5 +1,6 @@
 # Secrets
 .env
+*.p8
 
 # Temp
 tmp/

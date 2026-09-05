@@ -15,6 +15,10 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type DeviceTokenRequest struct {
+	DeviceToken string `json:"device_token"`
+}
+
 type RefreshRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
@@ -157,4 +161,9 @@ type DeleteProfilePictureRequest struct {
 
 type MoreTimelineRequest struct {
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type LikeNotificationRequest struct {
+	SenderUsername string `json:"sender_username"`
+	ReceiverID     int64  `json:"receiver_id"`
 }
