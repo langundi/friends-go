@@ -149,7 +149,7 @@ func (s *PostService) LikePost(ctx context.Context, senderID, postID int64, req 
 		return nil
 	}
 
-	if err := s.notificationService.NotifyLike(ctx, req); err != nil {
+	if err := s.notificationService.NotifyLike(ctx, senderID, postID, req); err != nil {
 		return err
 	}
 
@@ -190,7 +190,7 @@ func (s *PostService) ReplyPost(ctx context.Context, userID, postID int64, req t
 		return reply, nil
 	}
 
-	if err := s.notificationService.NotifyReply(ctx, req); err != nil {
+	if err := s.notificationService.NotifyReply(ctx, userID, postID, req); err != nil {
 		return nil, err
 	}
 

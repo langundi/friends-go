@@ -102,6 +102,7 @@ func main() {
 	likeStore := store.NewLikeStore(db)
 	replyStore := store.NewReplyStore(db)
 	deviceTokenStore := store.NewDeviceTokenStore(db)
+	notificationStore := store.NewNotificationStore(db)
 
 	ctx := context.Background()
 
@@ -118,7 +119,7 @@ func main() {
 	}
 
 	// Create Services
-	notificationService := services.NewNotificationService(apns, deviceTokenStore)
+	notificationService := services.NewNotificationService(notificationStore, deviceTokenStore, apns)
 	authService := services.NewAuthService(userStore, refreshTokenStore, cfg.secret, 1*time.Hour)
 	userService := services.NewUserService(userStore, r2Client)
 	postService := services.NewPostService(postStore, likeStore, replyStore, deviceTokenStore, r2Client, notificationService)
@@ -131,13 +132,15 @@ func main() {
 	postHandler := handlers.NewPostHandler(postService, cfg.r2.bucketName, cfg.r2.publicURL)
 	friendHandler := handlers.NewFriendHandler(friendService)
 	deviceTokenHandler := handlers.NewDeviceHandler(deviceTokenService)
+	notificationHandler := handlers.NewNotificationHandler(notificationService)
 
 	handlerCfg := handlers.HandlerConfig{
-		AuthHandler:        authHandler,
-		UserHandler:        userHandler,
-		PostHandler:        postHandler,
-		FriendHandler:      friendHandler,
-		DeviceTokenHandler: deviceTokenHandler,
+		AuthHandler:         authHandler,
+		UserHandler:         userHandler,
+		PostHandler:         postHandler,
+		FriendHandler:       friendHandler,
+		DeviceTokenHandler:  deviceTokenHandler,
+		NotificationHandler: notificationHandler,
 	}
 
 	// Starting Server

@@ -14,11 +14,11 @@ type HandlerConfig struct {
 	*PostHandler
 	*FriendHandler
 	*DeviceTokenHandler
+	*NotificationHandler
 }
 
 func Routes(h HandlerConfig) *chi.Mux {
 	r := chi.NewRouter()
-
 	r.Use(middleware.RequestID)
 	r.Use(middleware.ClientIPFromRemoteAddr)
 	r.Use(middleware.Logger)
@@ -106,7 +106,10 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Get("/{id}/status", h.GetFriendshipStatusHandler)
 			r.Delete("/{id}", h.DeclineOrUnfriendFriendHandler)
 		})
-	})
 
+		r.Route("/notification", func(r chi.Router) {
+			r.Get("/", h.GetAllNotifications)
+		})
+	})
 	return r
 }
