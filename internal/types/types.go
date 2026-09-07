@@ -179,3 +179,7 @@ type NotificationResponse struct {
 	CreatedAt      time.Time `json:"created_at"`
 	ProfilePicture *string   `json:"profile_picture"`
 }
+
+type DeleteReplyRequest struct {
+	ReplyID int64 `json:"reply_id"`
+}

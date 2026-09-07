@@ -396,13 +396,25 @@ func (h *PostHandler) ReplyPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PostHandler) DeleteReplyHandler(w http.ResponseWriter, r *http.Request) {
-	replyID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
+		return
+	}
+
+	postID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		utils.InternalServerError(w, r, err)
 		return
 	}
 
-	if err := h.postService.DeleteReply(r.Context(), replyID); err != nil {
+	var req types.DeleteReplyRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	if err := h.postService.DeleteReply(r.Context(), userID, postID, req.ReplyID); err != nil {
 		utils.InternalServerError(w, r, err)
 		return
 	}

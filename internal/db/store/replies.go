@@ -49,12 +49,10 @@ func (s *ReplyStore) DeleteReply(ctx context.Context, replyID int64) error {
 	query := `
 		DELETE FROM replies WHERE id = $1
 	`
-
 	_, err := s.db.Exec(ctx, query, replyID)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 

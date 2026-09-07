@@ -45,8 +45,9 @@ func (s *NotificationService) NotifyLike(ctx context.Context, userID, postID int
 	notification := &store.Notification{
 		ReceiverID: req.ReceiverID,
 		SenderID:   userID,
-		Message:    message,
 		PostID:     postID,
+		Category:   "like",
+		Message:    message,
 	}
 
 	if err := s.notificationStore.CreateNotification(ctx, notification); err != nil {
@@ -76,8 +77,9 @@ func (s *NotificationService) NotifyReply(ctx context.Context, userID, postID in
 	notification := &store.Notification{
 		ReceiverID: req.ReceiverID,
 		SenderID:   userID,
-		Message:    message,
 		PostID:     postID,
+		Category:   "reply",
+		Message:    message,
 	}
 
 	if err := s.notificationStore.CreateNotification(ctx, notification); err != nil {
@@ -98,7 +100,7 @@ func messageBuilder(username string, reply *string, action NotificationAction) s
 	case Like:
 		return username + " liked your post."
 	case Reply:
-		return username + " replied to your post: " + *reply
+		return username + " replied: " + *reply
 	default:
 		panic(fmt.Errorf("unknown action: %v", action))
 	}
@@ -115,6 +117,20 @@ func (s *NotificationService) GetAllNotifications(ctx context.Context, userID in
 func (s *NotificationService) ReadNotifications(ctx context.Context) error {
 	err := s.notificationStore.ReadNotifications(ctx)
 	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *NotificationService) DeleteLikeNotification(ctx context.Context, senderID, postID int64) error {
+	if err := s.notificationStore.DeleteNotificationByAction(ctx, senderID, postID, "like"); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *NotificationService) DeleteReplyNotification(ctx context.Context, senderID, postID int64) error {
+	if err := s.notificationStore.DeleteNotificationByAction(ctx, senderID, postID, "reply"); err != nil {
 		return err
 	}
 	return nil

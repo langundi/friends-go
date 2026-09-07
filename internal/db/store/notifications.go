@@ -13,8 +13,9 @@ type Notification struct {
 	ID             int64
 	ReceiverID     int64
 	SenderID       int64
-	Message        string
 	PostID         int64
+	Category       string
+	Message        string
 	IsRead         bool
 	CreatedAt      time.Time
 	ProfilePicture *string
@@ -30,10 +31,10 @@ func NewNotificationStore(db *pgxpool.Pool) *NotificationStore {
 
 func (s *NotificationStore) CreateNotification(ctx context.Context, notification *Notification) error {
 	query := `
-		INSERT INTO notifications (receiver_id, sender_id, message, post_id)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO notifications (receiver_id, sender_id, post_id, category, message)
+		VALUES ($1, $2, $3, $4, $5)
 	`
-	_, err := s.db.Exec(ctx, query, notification.ReceiverID, notification.SenderID, notification.Message, notification.PostID)
+	_, err := s.db.Exec(ctx, query, notification.ReceiverID, notification.SenderID, notification.PostID, notification.Category, notification.Message)
 	if err != nil {
 		return fmt.Errorf("create notification: %w", err)
 	}
@@ -49,9 +50,23 @@ func (s *NotificationStore) DeleteNotification(ctx context.Context, id int64) er
 	return nil
 }
 
+func (s *NotificationStore) DeleteNotificationByAction(ctx context.Context, senderID, postID int64, category string) error {
+	query := `
+		DELETE FROM notifications
+		WHERE sender_id = $1
+			AND post_id = $2
+			AND category = $3
+	`
+	_, err := s.db.Exec(ctx, query, senderID, postID, category)
+	if err != nil {
+		return fmt.Errorf("delete notification by action: %w", err)
+	}
+	return nil
+}
+
 func (s *NotificationStore) GetAllNotifications(ctx context.Context, userID int64) ([]Notification, error) {
 	query := `
-		SELECT n.id, n.receiver_id, n.sender_id, n.message, n.post_id, n.is_read, n.created_at, u.profile_picture
+		SELECT n.id, n.receiver_id, n.sender_id, n.post_id, n.category, n.message, n.is_read, n.created_at, u.profile_picture
 		FROM notifications n
 		JOIN users u ON u.id = n.sender_id
 		WHERE receiver_id = $1

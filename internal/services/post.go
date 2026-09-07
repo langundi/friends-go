@@ -161,6 +161,11 @@ func (s *PostService) UnlikePost(ctx context.Context, userID, postID int64) erro
 	if err != nil {
 		return err
 	}
+	// Delete notification related to that like
+	if err := s.notificationService.DeleteLikeNotification(ctx, userID, postID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -197,10 +202,14 @@ func (s *PostService) ReplyPost(ctx context.Context, userID, postID int64, req t
 	return reply, nil
 }
 
-func (s *PostService) DeleteReply(ctx context.Context, replyID int64) error {
-	err := s.replyStore.DeleteReply(ctx, replyID)
-	if err != nil {
+func (s *PostService) DeleteReply(ctx context.Context, userID, postID, replyID int64) error {
+	if err := s.replyStore.DeleteReply(ctx, replyID); err != nil {
 		return err
 	}
+	// Delete notification by userID from postID (all)
+	if err := s.notificationService.DeleteReplyNotification(ctx, userID, postID); err != nil {
+		return err
+	}
+
 	return nil
 }
