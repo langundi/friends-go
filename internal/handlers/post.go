@@ -234,25 +234,36 @@ func (h *PostHandler) GetMoreTimelineHandler(w http.ResponseWriter, r *http.Requ
 
 // Get a post by it's id
 func (h *PostHandler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, ErrUnauthorized)
+		return
+	}
+
 	postID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		utils.BadRequestError(w, r, err)
 		return
 	}
 
-	post, err := h.postService.GetPostByID(r.Context(), postID)
+	post, err := h.postService.GetPostByID(r.Context(), postID, userID)
 	if err != nil {
 		utils.NotFoundError(w, r, err)
 		return
 	}
 
 	response := types.PostResponse{
-		ID:        post.ID,
-		UserID:    post.UserID,
-		Caption:   post.Caption,
-		ImageURL:  post.ImageURL,
-		ObjectKey: post.ObjectKey,
-		CreatedAt: post.CreatedAt,
+		ID:             post.ID,
+		UserID:         post.UserID,
+		ImageURL:       post.ImageURL,
+		Caption:        post.Caption,
+		ObjectKey:      post.ObjectKey,
+		LikeCount:      post.LikeCount,
+		ReplyCount:     post.ReplyCount,
+		CreatedAt:      post.CreatedAt,
+		LikedByMe:      post.LikedByMe,
+		Username:       post.Username,
+		ProfilePicture: post.ProfilePicture,
 	}
 
 	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{

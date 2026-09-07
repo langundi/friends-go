@@ -99,8 +99,8 @@ func (s *PostService) DeletePostByID(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (s *PostService) GetPostByID(ctx context.Context, id int64) (*store.Post, error) {
-	post, err := s.postStore.GetPostByID(ctx, id)
+func (s *PostService) GetPostByID(ctx context.Context, id, userID int64) (*store.Post, error) {
+	post, err := s.postStore.GetPostByID(ctx, id, userID)
 	if err != nil {
 		return nil, ErrPostNotFound
 	}

@@ -136,19 +136,19 @@ func (s *PostStore) GetMoreTimeline(ctx context.Context, userID int64, lastCreat
 	return posts, nil
 }
 
-func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {
+func (s *PostStore) GetPostByID(ctx context.Context, id, userID int64) (*Post, error) {
 	query := `
 		SELECT p.id, p.user_id, p.caption, p.image_url, p.object_key, p.like_count, p.reply_count, p.created_at,
 			EXISTS (
-				SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $1
-			) AS liked_by_me
+				SELECT 1 FROM likes l WHERE l.post_id = p.id AND l.user_id = $2
+			) AS liked_by_me,
+			u.username, u.profile_picture
 		FROM posts p
-		WHERE id = $1
+		JOIN users u ON u.id = p.user_id
+		WHERE p.id = $1
 	`
-
 	var post Post
-
-	err := s.db.QueryRow(ctx, query, id).Scan(
+	err := s.db.QueryRow(ctx, query, id, userID).Scan(
 		&post.ID,
 		&post.UserID,
 		&post.Caption,
@@ -157,6 +157,9 @@ func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {
 		&post.LikeCount,
 		&post.ReplyCount,
 		&post.CreatedAt,
+		&post.LikedByMe,
+		&post.Username,
+		&post.ProfilePicture,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -164,7 +167,6 @@ func (s *PostStore) GetPostByID(ctx context.Context, id int64) (*Post, error) {
 		}
 		return nil, err
 	}
-
 	return &post, nil
 }
 
