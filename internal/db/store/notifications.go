@@ -70,11 +70,15 @@ func (s *NotificationStore) GetAllNotifications(ctx context.Context, userID int6
 	return notifications, nil
 }
 
-// func (s *NotificationStore) ReadNotifications(ctx context.Context, ids []int64) error {
-// 	query := `
-// 	 	UPDATE notifications
-// 	 	SET is_read = TRUE
-// 	  	WHERE id = ANY($1::bigint[])
-// 	`
-// 	_, err := s.db.Exec(ctx, query, ids)
-// }
+func (s *NotificationStore) ReadNotifications(ctx context.Context) error {
+	query := `
+	 	UPDATE notifications
+	 	SET is_read = TRUE
+	  	WHERE is_read = FALSE
+	`
+	_, err := s.db.Exec(ctx, query)
+	if err != nil {
+		return fmt.Errorf("read notification: %w", err)
+	}
+	return nil
+}

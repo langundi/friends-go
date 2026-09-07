@@ -109,6 +109,7 @@ func Routes(h HandlerConfig) *chi.Mux {
 
 		r.Route("/notification", func(r chi.Router) {
 			r.Get("/", h.GetAllNotifications)
+			r.Patch("/", h.ReadNotifications)
 		})
 	})
 	return r

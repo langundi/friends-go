@@ -50,3 +50,14 @@ func (h *NotificationHandler) GetAllNotifications(w http.ResponseWriter, r *http
 		Data:    data,
 	})
 }
+
+func (h *NotificationHandler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
+	if err := h.notificationService.ReadNotifications(r.Context()); err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
+	})
+}

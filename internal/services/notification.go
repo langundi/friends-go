@@ -112,5 +112,13 @@ func (s *NotificationService) GetAllNotifications(ctx context.Context, userID in
 	return notifications, nil
 }
 
+func (s *NotificationService) ReadNotifications(ctx context.Context) error {
+	err := s.notificationStore.ReadNotifications(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Notify Friend Request
 // Notify Accept Friend Request
