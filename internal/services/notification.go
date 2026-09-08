@@ -20,6 +20,8 @@ type NotificationAction int
 const (
 	Like NotificationAction = iota
 	Reply
+	Sent
+	Accept
 )
 
 func NewNotificationService(notificationStore *store.NotificationStore, deviceStore *store.DeviceTokenStore, apns *notification.APNsClient) *NotificationService {
@@ -95,12 +97,54 @@ func (s *NotificationService) NotifyReply(ctx context.Context, userID, postID in
 	return nil
 }
 
+func (s *NotificationService) NotifySentFriendRequest(ctx context.Context, req types.SendFriendRequestNotification) error {
+	tokens, err := s.deviceStore.GetDeviceTokens(ctx, req.ReceiverID)
+	if err != nil {
+		return err
+	}
+
+	if len(tokens) == 0 {
+		return nil
+	}
+
+	message := messageBuilder(req.SenderUsername, nil, Sent)
+	go func() {
+		for _, t := range tokens {
+			s.apns.SendNotification(t.Token, message)
+		}
+	}()
+	return nil
+}
+
+func (s *NotificationService) NotifyAcceptFriendRequest(ctx context.Context, req types.AcceptFriendRequestNotification) error {
+	tokens, err := s.deviceStore.GetDeviceTokens(ctx, req.SenderID)
+	if err != nil {
+		return err
+	}
+
+	if len(tokens) == 0 {
+		return nil
+	}
+
+	message := messageBuilder(req.SenderUsername, nil, Accept)
+	go func() {
+		for _, t := range tokens {
+			s.apns.SendNotification(t.Token, message)
+		}
+	}()
+	return nil
+}
+
 func messageBuilder(username string, reply *string, action NotificationAction) string {
 	switch action {
 	case Like:
 		return username + " liked your post."
 	case Reply:
 		return username + " replied: " + *reply
+	case Sent:
+		return username + " sent you a friend request."
+	case Accept:
+		return username + " accepted your friend request."
 	default:
 		panic(fmt.Errorf("unknown action: %v", action))
 	}

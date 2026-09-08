@@ -24,21 +24,21 @@ func NewFriendHandler(friendService *services.FriendService) *FriendHandler {
 	return &FriendHandler{friendService: friendService}
 }
 
-// Create a new friend request
-func (h *FriendHandler) CreateFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
+// Send a new friend request
+func (h *FriendHandler) SendFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middlewares.GetUserID(r)
 	if !ok {
 		utils.UnauthorizedError(w, r, ErrUnauthorized)
 		return
 	}
 
-	receiverID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-	if err != nil {
-		utils.BadRequestError(w, r, err)
+	var req types.SendFriendRequestNotification
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.InvalidPayloadError(w, r, err)
 		return
 	}
 
-	friendRequest, err := h.friendService.CreateFriendRequest(r.Context(), userID, receiverID)
+	friendRequest, err := h.friendService.SendFriendRequest(r.Context(), userID, req)
 	if err != nil {
 		utils.InternalServerError(w, r, err)
 		return
@@ -55,6 +55,30 @@ func (h *FriendHandler) CreateFriendRequestHandler(w http.ResponseWriter, r *htt
 	utils.WriteJson(w, http.StatusCreated, utils.JsonResponse{
 		Success: true,
 		Data:    response,
+	})
+}
+
+// Accept a friend request for current user
+func (h *FriendHandler) AcceptFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	var req types.AcceptFriendRequestNotification
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.InvalidPayloadError(w, r, err)
+		return
+	}
+
+	if err := h.friendService.AcceptFriendRequestByID(r.Context(), userID, req); err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
+		Success: true,
 	})
 }
 
@@ -134,24 +158,6 @@ func (h *FriendHandler) DeclineOrUnfriendFriendHandler(w http.ResponseWriter, r 
 	}
 
 	if err := h.friendService.DeclineOrUnfriendFriendByID(r.Context(), userID); err != nil {
-		utils.InternalServerError(w, r, err)
-		return
-	}
-
-	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
-		Success: true,
-	})
-}
-
-// Accept a friend request for current user
-func (h *FriendHandler) AcceptFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
-	userID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-	if err != nil {
-		utils.BadRequestError(w, r, err)
-		return
-	}
-
-	if err := h.friendService.AcceptFriendRequestByID(r.Context(), userID); err != nil {
 		utils.InternalServerError(w, r, err)
 		return
 	}

@@ -183,3 +183,13 @@ type NotificationResponse struct {
 type DeleteReplyRequest struct {
 	ReplyID int64 `json:"reply_id"`
 }
+
+type SendFriendRequestNotification struct {
+	SenderUsername string `json:"sender_username"`
+	ReceiverID     int64  `json:"receiver_id"`
+}
+
+type AcceptFriendRequestNotification struct {
+	SenderUsername string `json:"sender_username"`
+	SenderID       int64  `json:"sender_id"`
+}

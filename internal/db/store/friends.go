@@ -132,12 +132,10 @@ func (s *FriendStore) AcceptFriendByID(ctx context.Context, id int64) error {
 		SET status = 'accepted'
 		WHERE id = $1
 	`
-
 	_, err := s.db.Exec(ctx, query, id)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 

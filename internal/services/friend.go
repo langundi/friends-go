@@ -4,10 +4,12 @@ import (
 	"context"
 
 	"github.com/langundi/friends-go/internal/db/store"
+	"github.com/langundi/friends-go/internal/types"
 )
 
 type FriendService struct {
-	friendStore *store.FriendStore
+	friendStore         *store.FriendStore
+	notificationService *NotificationService
 }
 
 type FriendshipStatus string
@@ -19,18 +21,38 @@ const (
 	StatusFriends  FriendshipStatus = "FRIENDS"
 )
 
-func NewFriendService(friendStore *store.FriendStore) *FriendService {
-	return &FriendService{friendStore: friendStore}
+func NewFriendService(friendStore *store.FriendStore, notificationService *NotificationService) *FriendService {
+	return &FriendService{
+		friendStore:         friendStore,
+		notificationService: notificationService,
+	}
 }
 
-// Create a friend request with a sender and receiver ID
-func (s *FriendService) CreateFriendRequest(ctx context.Context, senderID int64, receiverID int64) (*store.NewFriendRequest, error) {
-	friend, err := s.friendStore.CreateFriendRequest(ctx, senderID, receiverID)
+// Send a friend request with a sender and receiver ID
+func (s *FriendService) SendFriendRequest(ctx context.Context, senderID int64, req types.SendFriendRequestNotification) (*store.NewFriendRequest, error) {
+	friend, err := s.friendStore.CreateFriendRequest(ctx, senderID, req.ReceiverID)
 	if err != nil {
 		return nil, err
 	}
 
+	if err := s.notificationService.NotifySentFriendRequest(ctx, req); err != nil {
+		return nil, err
+	}
+
 	return friend, nil
+}
+
+// Accept a friend request
+func (s *FriendService) AcceptFriendRequestByID(ctx context.Context, id int64, req types.AcceptFriendRequestNotification) error {
+	if err := s.friendStore.AcceptFriendByID(ctx, id); err != nil {
+		return err
+	}
+
+	if err := s.notificationService.NotifyAcceptFriendRequest(ctx, req); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Get all friend request for a user
@@ -68,16 +90,6 @@ func (s *FriendService) GetFriendshipStatus(ctx context.Context, currentUserID, 
 // Delete or Decline a friend request
 func (s *FriendService) DeclineOrUnfriendFriendByID(ctx context.Context, id int64) error {
 	err := s.friendStore.DeleteFriendByID(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Accept a friend request
-func (s *FriendService) AcceptFriendRequestByID(ctx context.Context, id int64) error {
-	err := s.friendStore.AcceptFriendByID(ctx, id)
 	if err != nil {
 		return err
 	}

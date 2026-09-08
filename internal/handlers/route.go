@@ -96,7 +96,7 @@ func Routes(h HandlerConfig) *chi.Mux {
 
 		r.Route("/friend-request", func(r chi.Router) {
 			r.Get("/", h.GetFriendRequestsHandler)
-			r.Post("/{id}", h.CreateFriendRequestHandler)
+			r.Post("/", h.SendFriendRequestHandler)
 			r.Patch("/{id}", h.AcceptFriendRequestHandler)
 			r.Delete("/{id}", h.DeclineOrUnfriendFriendHandler)
 		})
