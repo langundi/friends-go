@@ -175,7 +175,7 @@ func (h *FriendHandler) GetMyFriendListHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	list, err := h.friendService.GetFriendListForUserID(r.Context(), userID)
+	list, err := h.friendService.GetMyFriendList(r.Context(), userID)
 	if err != nil {
 		utils.InternalServerError(w, r, err)
 		return
@@ -200,30 +200,35 @@ func (h *FriendHandler) GetMyFriendListHandler(w http.ResponseWriter, r *http.Re
 	})
 }
 
-// Get friend list for current user
+// Get friend list for user
 func (h *FriendHandler) GetFriendListHandler(w http.ResponseWriter, r *http.Request) {
-	userID, ok := middlewares.GetUserID(r)
+	currentUserID, ok := middlewares.GetUserID(r)
 	if !ok {
 		utils.UnauthorizedError(w, r, ErrUnauthorized)
 		return
 	}
 
-	list, err := h.friendService.GetFriendListForUserID(r.Context(), userID)
+	userID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	list, err := h.friendService.GetFriendList(r.Context(), userID, currentUserID)
 	if err != nil {
 		utils.InternalServerError(w, r, err)
 		return
 	}
 
-	var data []types.FriendResponse
-
+	var data []types.FriendsFriendResponse
 	for _, v := range list {
-		response := types.FriendResponse{
+		response := types.FriendsFriendResponse{
 			ID:             v.ID,
 			UserID:         v.UserID,
 			Username:       v.Username,
 			ProfilePicture: v.ProfilePicture,
+			FriendsWithMe:  v.FriendsWithMe,
 		}
-
 		data = append(data, response)
 	}
 

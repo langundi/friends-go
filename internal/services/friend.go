@@ -97,12 +97,19 @@ func (s *FriendService) DeclineOrUnfriendFriendByID(ctx context.Context, id int6
 	return nil
 }
 
-// Get friend list
-func (s *FriendService) GetFriendListForUserID(ctx context.Context, userID int64) ([]store.Friend, error) {
-	list, err := s.friendStore.GetFriendListForUserID(ctx, userID)
+// Get my friend list
+func (s *FriendService) GetMyFriendList(ctx context.Context, userID int64) ([]store.Friend, error) {
+	list, err := s.friendStore.GetMyFriendList(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
+	return list, nil
+}
 
+func (s *FriendService) GetFriendList(ctx context.Context, userID, currentUserID int64) ([]store.FriendsFriend, error) {
+	list, err := s.friendStore.GetFriendListForUserID(ctx, userID, currentUserID)
+	if err != nil {
+		return nil, err
+	}
 	return list, nil
 }

@@ -116,6 +116,14 @@ type FriendResponse struct {
 	ProfilePicture *string `json:"profile_picture"`
 }
 
+type FriendsFriendResponse struct {
+	ID             int64   `json:"id"`
+	UserID         int64   `json:"user_id"`
+	Username       string  `json:"username"`
+	ProfilePicture *string `json:"profile_picture"`
+	FriendsWithMe  bool    `json:"friends_with_me"`
+}
+
 type ReplyRequest struct {
 	Reply      string `json:"reply"`
 	Username   string `json:"username"`

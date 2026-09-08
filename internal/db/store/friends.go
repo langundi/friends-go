@@ -35,6 +35,14 @@ type Friend struct {
 	ProfilePicture *string
 }
 
+type FriendsFriend struct {
+	ID             int64
+	UserID         int64
+	Username       string
+	ProfilePicture *string
+	FriendsWithMe  bool
+}
+
 type FriendStore struct {
 	db *pgxpool.Pool
 }
@@ -139,7 +147,41 @@ func (s *FriendStore) AcceptFriendByID(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (s *FriendStore) GetFriendListForUserID(ctx context.Context, userID int64) ([]Friend, error) {
+func (s *FriendStore) GetFriendListForUserID(ctx context.Context, userID, currentUserID int64) ([]FriendsFriend, error) {
+	query := `
+		SELECT f.id, u.id as user_id, u.username, u.profile_picture,
+			EXISTS (
+				SELECT 1
+				FROM friends f2
+				WHERE (
+					(f2.sender_id = u.id AND f2.receiver_id = $2)
+					or (f2.sender_id = $2 AND f2.receiver_id = u.id)
+				)
+				AND f2.status = 'accepted'
+			) AS friends_with_me
+		FROM friends f
+		JOIN users u ON u.id = CASE
+			WHEN f.sender_id = $1 THEN f.receiver_id
+			ELSE f.sender_id
+		END
+		WHERE (f.sender_id = $1 OR f.receiver_id = $1)
+		AND f.status = 'accepted';
+	`
+
+	rows, err := s.db.Query(ctx, query, userID, currentUserID)
+	if err != nil {
+		return nil, fmt.Errorf("query friend list: %w", err)
+	}
+
+	list, err := pgx.CollectRows(rows, pgx.RowToStructByName[FriendsFriend])
+	if err != nil {
+		return nil, fmt.Errorf("collecting friend list: %w", err)
+	}
+
+	return list, nil
+}
+
+func (s *FriendStore) GetMyFriendList(ctx context.Context, userID int64) ([]Friend, error) {
 	query := `
 		SELECT f.id, u.id as user_id, u.username, u.profile_picture
 		FROM friends f
@@ -148,7 +190,7 @@ func (s *FriendStore) GetFriendListForUserID(ctx context.Context, userID int64) 
 			ELSE f.sender_id
 		END
 		WHERE (f.sender_id = $1 OR f.receiver_id = $1)
-		AND f.status = 'accepted'
+		AND f.status = 'accepted';
 	`
 
 	rows, err := s.db.Query(ctx, query, userID)

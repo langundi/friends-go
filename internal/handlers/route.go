@@ -51,7 +51,7 @@ func Routes(h HandlerConfig) *chi.Mux {
 		r.Route("/user", func(r chi.Router) {
 			r.Get("/", h.GetProfileHandler)
 			r.Get("/me/posts", h.GetMyPostsHandler)
-			r.Get("/me/friends", h.GetFriendListHandler)
+			r.Get("/me/friends", h.GetMyFriendListHandler)
 			r.Get("/search/{username}", h.SearchProfileHandler)
 			r.Post("/upload-image", h.ProfilePicturePresignedURLHandler)
 			r.Delete("/delete", h.DeleteAccount)
