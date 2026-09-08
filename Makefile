@@ -17,17 +17,17 @@ docker-stop:
 migration-create:
 	@migrate create -seq -ext sql -dir $(MIGRATIONS_PATH) $(filter-out $@,$(MAKECMDGOALS))
 
-.PHONY: migrate-up
+.PHONY: migration-up
 migration-up:
-	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) up
+	@migrate -path=$(MIGRATIONS_PATH) -database="$(DB_ADDR)" up
 
-.PHONY: migrate-down
+.PHONY: migration-down
 migration-down:
-	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) down $(filter-out $@,$(MAKECMDGOALS))
+	@migrate -path=$(MIGRATIONS_PATH) -database="$(DB_ADDR)" down $(filter-out $@,$(MAKECMDGOALS))
 
 .PHONY: migration-force
 migration-force:
 ifndef version
 	$(error version is not set. Usage: make migration-force version=<N>)
 endif
-	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) force $(version)
+	@migrate -path=$(MIGRATIONS_PATH) -database="$(DB_ADDR)" force $(version)

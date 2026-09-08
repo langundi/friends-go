@@ -1,11 +1,14 @@
 package handlers
 
 import (
+	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/langundi/friends-go/internal/middlewares"
+	"github.com/langundi/friends-go/internal/ratelimiter"
 )
 
 type HandlerConfig struct {
@@ -17,12 +20,23 @@ type HandlerConfig struct {
 	*NotificationHandler
 }
 
-func Routes(h HandlerConfig) *chi.Mux {
+func Routes(h HandlerConfig, rlCfg ratelimiter.Config, rl *ratelimiter.RateLimiter) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.ClientIPFromRemoteAddr)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+
+	if rlCfg.Enabled {
+		r.Use(middlewares.RateLimiterMiddleware(rlCfg, rl))
+	}
+
+	r.HandleFunc("/slow", func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("slow request started")
+		time.Sleep(8 * time.Second)
+		slog.Info("slow request finished")
+		w.Write([]byte("done"))
+	})
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

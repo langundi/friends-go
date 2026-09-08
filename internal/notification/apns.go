@@ -18,14 +18,14 @@ var (
 	ErrInvalidAuthKey = errors.New("Auth key is invalid.")
 )
 
-func NewAPNsClient(authKeyPath, keyID, teamID, topic string, production bool) (*APNsClient, error) {
-	authKey, err := token.AuthKeyFromFile(authKeyPath)
+func NewAPNsClient(authKey []byte, keyID, teamID, topic string, production bool) (*APNsClient, error) {
+	key, err := token.AuthKeyFromBytes(authKey)
 	if err != nil {
 		return nil, ErrInvalidAuthKey
 	}
 
 	token := &token.Token{
-		AuthKey: authKey,
+		AuthKey: key,
 		KeyID:   keyID,
 		TeamID:  teamID,
 	}
