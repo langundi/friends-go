@@ -51,6 +51,7 @@ func Routes(h HandlerConfig) *chi.Mux {
 		r.Route("/user", func(r chi.Router) {
 			r.Get("/", h.GetProfileHandler)
 			r.Get("/me/posts", h.GetMyPostsHandler)
+			r.Get("/me/friends", h.GetFriendListHandler)
 			r.Get("/search/{username}", h.SearchProfileHandler)
 			r.Post("/upload-image", h.ProfilePicturePresignedURLHandler)
 			r.Delete("/delete", h.DeleteAccount)
@@ -58,6 +59,7 @@ func Routes(h HandlerConfig) *chi.Mux {
 			r.Route("/{id}", func(r chi.Router) {
 				r.Get("/", h.GetFriendProfileHandler)
 				r.Get("/posts", h.GetFriendPostsHandler)
+				r.Get("/friends", h.GetFriendListHandler)
 			})
 
 			r.Route("/change", func(r chi.Router) {
@@ -102,7 +104,6 @@ func Routes(h HandlerConfig) *chi.Mux {
 		})
 
 		r.Route("/friend", func(r chi.Router) {
-			r.Get("/", h.GetFriendListHandler)
 			r.Get("/{id}/status", h.GetFriendshipStatusHandler)
 			r.Delete("/{id}", h.DeclineOrUnfriendFriendHandler)
 		})
