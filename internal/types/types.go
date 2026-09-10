@@ -131,13 +131,14 @@ type ReplyRequest struct {
 }
 
 type ReplyResponse struct {
-	ID          int64     `json:"id"`
-	UserID      int64     `json:"user_id"`
-	PostID      int64     `json:"post_id"`
-	Reply       string    `json:"reply"`
-	CreatedAt   time.Time `json:"created_at"`
-	RepliedByMe bool      `json:"replied_by_me"`
-	Username    string    `json:"username"`
+	ID             int64     `json:"id"`
+	UserID         int64     `json:"user_id"`
+	PostID         int64     `json:"post_id"`
+	Reply          string    `json:"reply"`
+	CreatedAt      time.Time `json:"created_at"`
+	RepliedByMe    bool      `json:"replied_by_me"`
+	Username       string    `json:"username"`
+	ProfilePicture *string   `json:"profile_picture"`
 }
 
 type SetProfilePictureRequest struct {

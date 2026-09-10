@@ -9,13 +9,14 @@ import (
 )
 
 type Reply struct {
-	ID          int64
-	UserID      int64
-	PostID      int64
-	Reply       string
-	CreatedAt   time.Time
-	RepliedByMe bool
-	Username    string
+	ID             int64
+	UserID         int64
+	PostID         int64
+	Reply          string
+	CreatedAt      time.Time
+	RepliedByMe    bool
+	Username       string
+	ProfilePicture *string
 }
 
 type ReplyStore struct {
@@ -58,12 +59,11 @@ func (s *ReplyStore) DeleteReply(ctx context.Context, replyID int64) error {
 
 func (s *ReplyStore) GetRepliesForPostID(ctx context.Context, userID, postID int64) ([]Reply, error) {
 	query := `
-		SELECT r.id, r.user_id, r.post_id, r.reply, r.created_at, r.user_id = $1 AS replied_by_me, u.username
+		SELECT r.id, r.user_id, r.post_id, r.reply, r.created_at, r.user_id = $1 AS replied_by_me, u.username, u.profile_picture
 		FROM replies r
 		JOIN users u ON u.id = r.user_id
 		WHERE post_id = $2
 		ORDER BY created_at ASC
-		LIMIT 10
 	`
 
 	rows, err := s.db.Query(ctx, query, userID, postID)
