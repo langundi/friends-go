@@ -104,6 +104,7 @@ func Routes(h HandlerConfig, rlCfg ratelimiter.Config, rl *ratelimiter.RateLimit
 				r.Get("/replies", h.GetPostRepliesHandler)
 				r.Post("/like", h.LikePostHandler)
 				r.Post("/reply", h.ReplyPostHandler)
+				r.Post("/reply-user", h.ReplyUserHandler)
 				r.Delete("/", h.DeletePostHadler)
 				r.Delete("/unlike", h.UnlikePostHandler)
 				r.Delete("/reply", h.DeleteReplyHandler)

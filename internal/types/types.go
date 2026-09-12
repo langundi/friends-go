@@ -125,9 +125,10 @@ type FriendsFriendResponse struct {
 }
 
 type ReplyRequest struct {
-	Reply      string `json:"reply"`
-	Username   string `json:"username"`
-	ReceiverID int64  `json:"receiver_id"`
+	Reply       string `json:"reply"`
+	Username    string `json:"username"`
+	ReceiverID  int64  `json:"receiver_id"`
+	PostOwnerID int64  `json:"post_owner_id"`
 }
 
 type ReplyResponse struct {

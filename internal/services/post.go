@@ -191,11 +191,43 @@ func (s *PostService) ReplyPost(ctx context.Context, userID, postID int64, req t
 		return nil, err
 	}
 
-	if userID == req.ReceiverID {
+	if userID == req.PostOwnerID {
 		return reply, nil
 	}
 
-	if err := s.notificationService.NotifyReply(ctx, userID, postID, req); err != nil {
+	if err := s.notificationService.NotifyPostReply(ctx, userID, postID, req); err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
+
+func (s *PostService) ReplyUser(ctx context.Context, userID, postID int64, req types.ReplyRequest) (*store.Reply, error) {
+	reply := &store.Reply{
+		UserID:      userID,
+		PostID:      postID,
+		Reply:       req.Reply,
+		RepliedByMe: true,
+		Username:    req.Username,
+	}
+
+	err := s.replyStore.CreateReply(ctx, reply)
+	if err != nil {
+		return nil, err
+	}
+
+	// Notify user
+	if err := s.notificationService.NotifyUserReply(ctx, userID, postID, req); err != nil {
+		return nil, err
+	}
+
+	// Check if post owner is replying to their post
+	if userID == req.PostOwnerID {
+		return reply, nil
+	}
+
+	// Notify post owner
+	if err := s.notificationService.NotifyPostReply(ctx, userID, postID, req); err != nil {
 		return nil, err
 	}
 

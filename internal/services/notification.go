@@ -64,8 +64,41 @@ func (s *NotificationService) NotifyLike(ctx context.Context, userID, postID int
 	return nil
 }
 
-// Notify reply
-func (s *NotificationService) NotifyReply(ctx context.Context, userID, postID int64, req types.ReplyRequest) error {
+// Notify post owner
+func (s *NotificationService) NotifyPostReply(ctx context.Context, userID, postID int64, req types.ReplyRequest) error {
+	tokens, err := s.deviceStore.GetDeviceTokens(ctx, req.PostOwnerID)
+	if err != nil {
+		return err
+	}
+
+	if len(tokens) == 0 {
+		return nil
+	}
+
+	message := messageBuilder(req.Username, &req.Reply, Reply)
+	notification := &store.Notification{
+		ReceiverID: req.PostOwnerID,
+		SenderID:   userID,
+		PostID:     postID,
+		Category:   "reply",
+		Message:    message,
+	}
+
+	if err := s.notificationStore.CreateNotification(ctx, notification); err != nil {
+		return err
+	}
+
+	go func() {
+		for _, t := range tokens {
+			s.apns.SendNotification(t.Token, message)
+		}
+	}()
+
+	return nil
+}
+
+// Notify user reply
+func (s *NotificationService) NotifyUserReply(ctx context.Context, userID, postID int64, req types.ReplyRequest) error {
 	tokens, err := s.deviceStore.GetDeviceTokens(ctx, req.ReceiverID)
 	if err != nil {
 		return err
