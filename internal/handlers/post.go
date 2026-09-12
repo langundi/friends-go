@@ -346,13 +346,14 @@ func (h *PostHandler) GetPostRepliesHandler(w http.ResponseWriter, r *http.Reque
 	var data []types.ReplyResponse
 	for _, v := range replies {
 		response := types.ReplyResponse{
-			ID:          v.ID,
-			UserID:      v.UserID,
-			PostID:      v.PostID,
-			Reply:       v.Reply,
-			CreatedAt:   v.CreatedAt,
-			RepliedByMe: v.RepliedByMe,
-			Username:    v.Username,
+			ID:             v.ID,
+			UserID:         v.UserID,
+			PostID:         v.PostID,
+			Reply:          v.Reply,
+			CreatedAt:      v.CreatedAt,
+			RepliedByMe:    v.RepliedByMe,
+			Username:       v.Username,
+			ProfilePicture: v.ProfilePicture,
 		}
 		data = append(data, response)
 	}
