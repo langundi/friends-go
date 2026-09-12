@@ -83,9 +83,10 @@ func (h *UserHandler) GetFriendProfileHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	response := UserResponse{
-		ID:       user.ID,
-		Email:    user.Email,
-		Username: user.Username,
+		ID:             user.ID,
+		Email:          user.Email,
+		Username:       user.Username,
+		ProfilePicture: user.ProfilePicture,
 	}
 
 	utils.WriteJson(w, http.StatusOK, utils.JsonResponse{
