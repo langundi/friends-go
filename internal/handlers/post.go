@@ -390,13 +390,14 @@ func (h *PostHandler) ReplyPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := types.ReplyResponse{
-		ID:          reply.ID,
-		UserID:      reply.UserID,
-		PostID:      reply.PostID,
-		Reply:       reply.Reply,
-		CreatedAt:   reply.CreatedAt,
-		RepliedByMe: reply.RepliedByMe,
-		Username:    reply.Username,
+		ID:             reply.ID,
+		UserID:         reply.UserID,
+		PostID:         reply.PostID,
+		Reply:          reply.Reply,
+		CreatedAt:      reply.CreatedAt,
+		RepliedByMe:    reply.RepliedByMe,
+		Username:       reply.Username,
+		ProfilePicture: reply.ProfilePicture,
 	}
 
 	utils.WriteJson(w, http.StatusCreated, utils.JsonResponse{
@@ -420,7 +421,7 @@ func (h *PostHandler) ReplyUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	var req types.ReplyRequest
 	if err := utils.ReadJson(w, r, &req); err != nil {
-		utils.BadRequestError(w, r, err)
+		utils.InvalidPayloadError(w, r, err)
 		return
 	}
 
@@ -431,13 +432,14 @@ func (h *PostHandler) ReplyUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := types.ReplyResponse{
-		ID:          reply.ID,
-		UserID:      reply.UserID,
-		PostID:      reply.PostID,
-		Reply:       reply.Reply,
-		CreatedAt:   reply.CreatedAt,
-		RepliedByMe: reply.RepliedByMe,
-		Username:    reply.Username,
+		ID:             reply.ID,
+		UserID:         reply.UserID,
+		PostID:         reply.PostID,
+		Reply:          reply.Reply,
+		CreatedAt:      reply.CreatedAt,
+		RepliedByMe:    reply.RepliedByMe,
+		Username:       reply.Username,
+		ProfilePicture: reply.ProfilePicture,
 	}
 
 	utils.WriteJson(w, http.StatusCreated, utils.JsonResponse{
