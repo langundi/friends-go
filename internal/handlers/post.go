@@ -390,13 +390,56 @@ func (h *PostHandler) ReplyPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := types.ReplyResponse{
-		ID:          reply.ID,
-		UserID:      reply.UserID,
-		PostID:      reply.PostID,
-		Reply:       reply.Reply,
-		CreatedAt:   reply.CreatedAt,
-		RepliedByMe: reply.RepliedByMe,
-		Username:    reply.Username,
+		ID:             reply.ID,
+		UserID:         reply.UserID,
+		PostID:         reply.PostID,
+		Reply:          reply.Reply,
+		CreatedAt:      reply.CreatedAt,
+		RepliedByMe:    reply.RepliedByMe,
+		Username:       reply.Username,
+		ProfilePicture: reply.ProfilePicture,
+	}
+
+	utils.WriteJson(w, http.StatusCreated, utils.JsonResponse{
+		Success: true,
+		Data:    response,
+	})
+}
+
+func (h *PostHandler) ReplyUserHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middlewares.GetUserID(r)
+	if !ok {
+		utils.UnauthorizedError(w, r, errors.New("Unauthorized."))
+		return
+	}
+
+	postID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		utils.BadRequestError(w, r, err)
+		return
+	}
+
+	var req types.ReplyRequest
+	if err := utils.ReadJson(w, r, &req); err != nil {
+		utils.InvalidPayloadError(w, r, err)
+		return
+	}
+
+	reply, err := h.postService.ReplyUser(r.Context(), userID, postID, req)
+	if err != nil {
+		utils.InternalServerError(w, r, err)
+		return
+	}
+
+	response := types.ReplyResponse{
+		ID:             reply.ID,
+		UserID:         reply.UserID,
+		PostID:         reply.PostID,
+		Reply:          reply.Reply,
+		CreatedAt:      reply.CreatedAt,
+		RepliedByMe:    reply.RepliedByMe,
+		Username:       reply.Username,
+		ProfilePicture: reply.ProfilePicture,
 	}
 
 	utils.WriteJson(w, http.StatusCreated, utils.JsonResponse{
