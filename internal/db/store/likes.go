@@ -25,12 +25,10 @@ func (s *LikeStore) LikePost(ctx context.Context, userID, postID int64) error {
 		VALUES ($1, $2)
 		ON CONFLICT (user_id, post_id) DO NOTHING
 	`
-
 	_, err := s.db.Exec(ctx, query, userID, postID)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -38,11 +36,9 @@ func (s *LikeStore) UnlikePost(ctx context.Context, userID, postID int64) error 
 	query := `
 		DELETE FROM likes WHERE user_id = $1 AND post_id = $2
 	`
-
 	_, err := s.db.Exec(ctx, query, userID, postID)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }

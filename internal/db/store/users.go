@@ -13,14 +13,14 @@ import (
 )
 
 type User struct {
-	ID             int64     `json:"id"`
-	Username       string    `json:"username"`
-	Email          string    `json:"email"`
-	Password       string    `json:"-"`
-	ProfilePicture *string   `json:"profile_picture"`
-	ObjectKey      *string   `json:"object_key"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"udpated_at"`
+	ID             int64
+	Username       string
+	Email          string
+	Password       string
+	ProfilePicture *string
+	ObjectKey      *string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 type ProfilePicture struct {
@@ -43,6 +43,7 @@ func NewUserStore(db *pgxpool.Pool) *UserStore {
 	return &UserStore{db: db}
 }
 
+// Hash password with bcrypt
 func (u *User) SetPassword(password string) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -54,6 +55,7 @@ func (u *User) SetPassword(password string) error {
 	return nil
 }
 
+// Compare bcrypt hashed password with given password
 func (u *User) CheckPassword(password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 }
@@ -100,7 +102,6 @@ func (s *UserStore) GetUserByID(ctx context.Context, id int64) (*User, error) {
 	`
 
 	var user User
-
 	err := s.db.QueryRow(ctx, query, id).Scan(
 		&user.ID,
 		&user.Username,
@@ -126,7 +127,6 @@ func (s *UserStore) GetUserByUsername(ctx context.Context, username string) (*Us
 	`
 
 	var user User
-
 	err := s.db.QueryRow(ctx, query, username).Scan(
 		&user.ID,
 		&user.Username,
@@ -150,7 +150,6 @@ func (s *UserStore) GetUserByEmail(ctx context.Context, email string) (*User, er
 	`
 
 	var user User
-
 	err := s.db.QueryRow(ctx, query, email).Scan(
 		&user.ID,
 		&user.Username,
@@ -201,7 +200,6 @@ func (s *UserStore) DeleteProfilePicture(ctx context.Context, id int64) error {
 
 func (s *UserStore) ChangeUsername(ctx context.Context, username string, userID int64) error {
 	query := `UPDATE users SET username = $1 WHERE id = $2`
-
 	_, err := s.db.Exec(ctx, query, username, userID)
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -210,13 +208,11 @@ func (s *UserStore) ChangeUsername(ctx context.Context, username string, userID 
 		}
 		return err
 	}
-
 	return nil
 }
 
 func (s *UserStore) ChangeEmail(ctx context.Context, email string, userID int64) error {
 	query := `UPDATE users SET email = $1 WHERE id = $2`
-
 	_, err := s.db.Exec(ctx, query, email, userID)
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -225,7 +221,6 @@ func (s *UserStore) ChangeEmail(ctx context.Context, email string, userID int64)
 		}
 		return err
 	}
-
 	return nil
 }
 
