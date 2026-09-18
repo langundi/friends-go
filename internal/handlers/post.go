@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"path"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
@@ -78,7 +77,7 @@ func (h *PostHandler) GetPresignedURLHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	objectKey := h.generateObjectKey(userID, req.Filename, "posts")
+	objectKey := utils.GenerateObjectKey(userID, req.Filename, "posts")
 	url, err := h.postService.PresignUploadURL(r.Context(), h.bucketName, objectKey, req.ContentType)
 	if err != nil {
 		utils.InternalServerError(w, r, err)
@@ -132,7 +131,7 @@ func (h *PostHandler) DeletePostHadler(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandler) DeleteAllImageHandler(w http.ResponseWriter, r *http.Request) {
 	var req types.DeleteAllImagesRequest
 	if err := utils.ReadJson(w, r, &req); err != nil {
-		utils.BadRequestError(w, r, err)
+		utils.InvalidPayloadError(w, r, err)
 		return
 	}
 
@@ -161,7 +160,6 @@ func (h *PostHandler) GetTimelineHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	var data []types.PostResponse
-
 	for _, v := range posts {
 		response := types.PostResponse{
 			ID:             v.ID,
@@ -176,7 +174,6 @@ func (h *PostHandler) GetTimelineHandler(w http.ResponseWriter, r *http.Request)
 			Username:       v.Username,
 			ProfilePicture: v.ProfilePicture,
 		}
-
 		data = append(data, response)
 	}
 
@@ -196,7 +193,7 @@ func (h *PostHandler) GetMoreTimelineHandler(w http.ResponseWriter, r *http.Requ
 
 	var req types.MoreTimelineRequest
 	if err := utils.ReadJson(w, r, &req); err != nil {
-		utils.BadRequestError(w, r, err)
+		utils.InvalidPayloadError(w, r, err)
 		return
 	}
 
@@ -207,7 +204,6 @@ func (h *PostHandler) GetMoreTimelineHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	var data []types.PostResponse
-
 	for _, v := range posts {
 		response := types.PostResponse{
 			ID:             v.ID,
@@ -222,7 +218,6 @@ func (h *PostHandler) GetMoreTimelineHandler(w http.ResponseWriter, r *http.Requ
 			Username:       v.Username,
 			ProfilePicture: v.ProfilePicture,
 		}
-
 		data = append(data, response)
 	}
 
@@ -287,7 +282,7 @@ func (h *PostHandler) LikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	var req types.LikeNotificationRequest
 	if err := utils.ReadJson(w, r, &req); err != nil {
-		utils.BadRequestError(w, r, err)
+		utils.InvalidPayloadError(w, r, err)
 		return
 	}
 
@@ -379,7 +374,7 @@ func (h *PostHandler) ReplyPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	var req types.ReplyRequest
 	if err := utils.ReadJson(w, r, &req); err != nil {
-		utils.BadRequestError(w, r, err)
+		utils.InvalidPayloadError(w, r, err)
 		return
 	}
 
@@ -463,7 +458,7 @@ func (h *PostHandler) DeleteReplyHandler(w http.ResponseWriter, r *http.Request)
 
 	var req types.DeleteReplyRequest
 	if err := utils.ReadJson(w, r, &req); err != nil {
-		utils.BadRequestError(w, r, err)
+		utils.InvalidPayloadError(w, r, err)
 		return
 	}
 
@@ -492,7 +487,6 @@ func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var data []types.PostResponse
-
 	for _, v := range posts {
 		response := types.PostResponse{
 			ID:             v.ID,
@@ -507,7 +501,6 @@ func (h *PostHandler) GetMyPostsHandler(w http.ResponseWriter, r *http.Request) 
 			Username:       v.Username,
 			ProfilePicture: v.ProfilePicture,
 		}
-
 		data = append(data, response)
 	}
 
@@ -538,7 +531,6 @@ func (h *PostHandler) GetFriendPostsHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	var data []types.PostResponse
-
 	for _, v := range posts {
 		response := types.PostResponse{
 			ID:             v.ID,
@@ -553,7 +545,6 @@ func (h *PostHandler) GetFriendPostsHandler(w http.ResponseWriter, r *http.Reque
 			Username:       v.Username,
 			ProfilePicture: v.ProfilePicture,
 		}
-
 		data = append(data, response)
 	}
 
@@ -561,10 +552,6 @@ func (h *PostHandler) GetFriendPostsHandler(w http.ResponseWriter, r *http.Reque
 		Success: true,
 		Data:    data,
 	})
-}
-
-func (h *PostHandler) generateObjectKey(userID int64, filename, folder string) string {
-	return path.Join(folder, strconv.Itoa(int(userID)), filename+".jpeg")
 }
 
 func (h *PostHandler) publicImageURL(key string) string {

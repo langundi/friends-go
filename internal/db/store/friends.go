@@ -105,7 +105,6 @@ func (s *FriendStore) GetFriendshipStatus(ctx context.Context, currentUserID, se
 	`
 
 	var friendReq NewFriendRequest
-
 	err := s.db.QueryRow(ctx, query, currentUserID, searchedUserID).Scan(
 		&friendReq.ID,
 		&friendReq.SenderID,
@@ -125,12 +124,10 @@ func (s *FriendStore) GetFriendshipStatus(ctx context.Context, currentUserID, se
 
 func (s *FriendStore) DeleteFriendByID(ctx context.Context, id int64) error {
 	query := `DELETE FROM friends WHERE id = $1`
-
 	_, err := s.db.Exec(ctx, query, id)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 

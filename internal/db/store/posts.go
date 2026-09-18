@@ -54,12 +54,10 @@ func (s *PostStore) CreatePost(ctx context.Context, post *Post) error {
 
 func (s *PostStore) DeletePostByID(ctx context.Context, id int64) error {
 	query := `DELETE FROM posts WHERE id = $1`
-
 	_, err := s.db.Exec(ctx, query, id)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -147,6 +145,7 @@ func (s *PostStore) GetPostByID(ctx context.Context, id, userID int64) (*Post, e
 		JOIN users u ON u.id = p.user_id
 		WHERE p.id = $1
 	`
+
 	var post Post
 	err := s.db.QueryRow(ctx, query, id, userID).Scan(
 		&post.ID,
@@ -167,6 +166,7 @@ func (s *PostStore) GetPostByID(ctx context.Context, id, userID int64) (*Post, e
 		}
 		return nil, err
 	}
+
 	return &post, nil
 }
 

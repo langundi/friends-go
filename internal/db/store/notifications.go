@@ -72,6 +72,7 @@ func (s *NotificationStore) GetAllNotifications(ctx context.Context, userID int6
 		WHERE receiver_id = $1
 		ORDER BY created_at DESC
 	`
+
 	rows, err := s.db.Query(ctx, query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("query notifications: %w", err)

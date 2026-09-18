@@ -97,7 +97,6 @@ func (h *FriendHandler) GetFriendRequestsHandler(w http.ResponseWriter, r *http.
 	}
 
 	var data []types.FriendRequestResponse
-
 	for _, v := range list {
 		response := types.FriendRequestResponse{
 			ID:             v.ID,
@@ -108,7 +107,6 @@ func (h *FriendHandler) GetFriendRequestsHandler(w http.ResponseWriter, r *http.
 			CreatedAt:      v.CreatedAt,
 			ProfilePicture: v.ProfilePicture,
 		}
-
 		data = append(data, response)
 	}
 
